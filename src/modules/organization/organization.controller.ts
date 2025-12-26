@@ -1,0 +1,75 @@
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+} from '@nestjs/common';
+import { OrganizationService } from './organization.service';
+import { CreateOrganizationDto } from './dto/create-organization.dto';
+import { UpdateOrganizationDto } from './dto/update-organization.dto';
+
+@Controller('organizations')
+export class OrganizationController {
+    constructor(private readonly service: OrganizationService) { }
+
+    // =========================
+    // CREATE
+    // =========================
+    @Post()
+    create(@Body() dto: CreateOrganizationDto) {
+        return this.service.create(dto);
+    }
+
+    // =========================
+    // READ
+    // =========================
+    @Get()
+    findAll() {
+        return this.service.findAll();
+    }
+
+    @Get(':id')
+    findById(@Param('id') id: string) {
+        return this.service.findById(id);
+    }
+
+    @Get('slug/:slug')
+    findBySlug(@Param('slug') slug: string) {
+        return this.service.findBySlug(slug);
+    }
+
+    // =========================
+    // UPDATE
+    // =========================
+    @Patch(':id')
+    update(
+        @Param('id') id: string,
+        @Body() dto: UpdateOrganizationDto,
+    ) {
+        return this.service.update(id, dto);
+    }
+
+    // =========================
+    // ACTIVATE / DEACTIVATE
+    // =========================
+    @Patch(':id/activate')
+    activate(@Param('id') id: string) {
+        return this.service.activate(id);
+    }
+
+    @Patch(':id/deactivate')
+    deactivate(@Param('id') id: string) {
+        return this.service.deactivate(id);
+    }
+
+    // =========================
+    // DELETE (SOFT)
+    // =========================
+    @Delete(':id')
+    delete(@Param('id') id: string) {
+        return this.service.delete(id);
+    }
+}

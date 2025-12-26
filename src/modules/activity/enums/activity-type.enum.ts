@@ -1,0 +1,9 @@
+export enum ActivityType {
+    CALL = 'CALL',
+    EMAIL = 'EMAIL',
+    NOTE = 'NOTE',
+    MEETING = 'MEETING',
+    TASK_CREATED = 'TASK_CREATED',
+    TASK_COMPLETED = 'TASK_COMPLETED',
+    STATUS_CHANGE = 'STATUS_CHANGE'
+}
