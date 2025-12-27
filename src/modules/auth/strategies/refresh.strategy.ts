@@ -12,6 +12,11 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
     }
 
     validate(payload: any) {
-        return payload;
+        return {
+            userId: payload.sub,
+            username: payload.username,
+            role: payload.role,
+        };
     }
+
 }

@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import 'dotenv/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,19 +10,29 @@ async function bootstrap() {
     .setTitle('Codyol CRM API')
     .setDescription('CRM Backend API Documentation')
     .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        in: 'header',
-      },
-      'JWT-auth', // 👈 BU İSİM ÇOK ÖNEMLİ
-    )
+    .addSecurity('JWT-auth', {
+      type: 'apiKey',
+      name: 'Authorization',
+      in: 'header',
+      description: 'Sadece JWT token gir (Bearer otomatik eklenir)',
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      requestInterceptor: (req: { headers: { Authorization: string; }; }) => {
+        if (
+          req.headers.Authorization &&
+          !req.headers.Authorization.startsWith('Bearer ')
+        ) {
+          req.headers.Authorization = `Bearer ${req.headers.Authorization}`;
+        }
+        return req;
+      },
+    },
+  });
 
   await app.listen(3000);
 }

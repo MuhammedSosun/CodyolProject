@@ -6,22 +6,26 @@ import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
+import { Public } from './decorators/public.decorator';
+
 
 @ApiTags('Auth')
 @Controller('api/auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
+    @Public()
     @Post('register')
     register(@Body() dto: RegisterDto) {
         return this.authService.register(dto);
     }
-
+    @Public()
     @Post('authenticate')
     authenticate(@Body() dto: LoginDto) {
         return this.authService.authenticate(dto);
     }
 
+    @UseGuards(RefreshAuthGuard)
     @Post('refreshToken')
     refresh(@Body() dto: RefreshTokenDto) {
         return this.authService.refresh(dto);
@@ -29,10 +33,12 @@ export class AuthController {
 
 
 
+
     @ApiBearerAuth('JWT-auth')
     @UseGuards(JwtAuthGuard)
     @Post('logout')
     logout(@Req() req) {
-        return this.authService.logout(req.user.sub);
+        return this.authService.logout(req.user.userId);
     }
+
 }

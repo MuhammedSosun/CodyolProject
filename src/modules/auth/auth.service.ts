@@ -99,6 +99,7 @@ export class AuthService {
     }
 
     private async createRefreshToken(userId: string) {
+        await this.prisma.refreshToken.deleteMany({ where: { userId } }); // Eskileri temizle (Opsiyonel: Sadece süresi dolanları temizle)
         const token = randomUUID();
         await this.prisma.refreshToken.create({
             data: {

@@ -10,7 +10,11 @@ import {
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+
+@ApiTags('Organizations')
+@ApiBearerAuth('JWT-auth')
 @Controller('organizations')
 export class OrganizationController {
     constructor(private readonly service: OrganizationService) { }

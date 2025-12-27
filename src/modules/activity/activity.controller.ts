@@ -7,11 +7,12 @@ import {
     Post,
     Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ActivityService } from './activity.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { ActivityListQueryDto } from './dto/activity-list-query.dto';
 
+@ApiBearerAuth('JWT-auth')
 @ApiTags('Activity')
 @Controller('activities')
 export class ActivityController {

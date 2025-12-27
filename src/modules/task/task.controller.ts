@@ -8,12 +8,13 @@ import {
     Post,
     Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @ApiTags('Task')
+@ApiBearerAuth('JWT-auth')
 @Controller('tasks')
 export class TaskController {
     constructor(private readonly service: TaskService) { }
