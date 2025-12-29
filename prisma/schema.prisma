@@ -1,223 +1,253 @@
-  generator client {
-    provider = "prisma-client-js"
-  }
-
-  datasource db {
-    provider = "postgresql" // mysql / sqlite ise değiştir
-    url      = env("DATABASE_URL")
-  }
-
-  enum Role {
-    USER
-    ADMIN
-    SUPER_ADMIN
-  }
-
-  model User {
-    id        String   @id @default(uuid())
-    username  String   @unique
-    email     String   @unique
-    password  String
-    role      Role     @default(USER)
-
-    organizationId String
-    organization   Organization @relation(fields: [organizationId], references: [id])
-
-    ownedCustomers Customer[] @relation("CustomerOwner")
-
-    refreshTokens RefreshToken[]
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@index([organizationId])
-  }
-
-  model RefreshToken {
-    id           String   @id @default(uuid())
-    refreshToken String   @unique
-    expiredAt    DateTime
-
-    userId String
-    user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  }
-
-
-  model Organization {
-    id String @id @default(uuid())
-
-    // Identity
-    name             String
-    slug             String           @unique
-    organizationType OrganizationType
-
-    // Business info
-    legalName String?
-    industry  String?
-    website   String?
-    email     String?
-    phone     String?
-
-    // Subscription
-    planType PlanType @default(FREE)
-    isActive Boolean  @default(true)
-
-    // Ownership (Auth / Super Admin)
-    ownerUserId String
-
-    // Relations
-    users      User[]
-    customers  Customer[]
-    activities Activity[]
-    tasks      Task[]
-
-    // Audit
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deletedAt DateTime?
-
-    @@index([ownerUserId])
-    @@index([isActive])
-    @@index([deletedAt])
-  }
-
-
-  enum OrganizationType {
-    COMPANY
-    CLUB
-    NGO
-  }
-
-  enum PlanType {
-    FREE
-    PRO
-    ENTERPRISE
-  }
-
-  model Customer {
-    id String @id @default(uuid())
-
-    // Multi-tenant
-    organizationId String
-    organization   Organization @relation(fields: [organizationId], references: [id])
-
-    // Ownership (CRM içi sorumlu)
-    ownerUserId String
-    owner       User @relation("CustomerOwner", fields: [ownerUserId], references: [id])
-
-    // Personal / Company Info
-    fullName   String
-    email       String?
-    phone       String?
-    companyName String?
-    vatNumber   String?
-    website     String?
-    address     String?
-    description String?
-    designation String?
-
-    // CRM lifecycle
-    status CustomerStatus @default(NEW)
-
-    // Relations
-    activities Activity[]
-    tasks      Task[]
-
-    // Audit
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deletedAt DateTime?
-
-    @@index([organizationId])
-    @@index([ownerUserId])
-    @@index([status])
-    @@index([deletedAt])
-  }
-
-
-
- enum CustomerStatus {
-  NEW                 // Yeni
-  CONTACTED           // İletişim Kuruldu
-  OFFER_SENT          // Teklif Gönderildi
-  WAITING_APPROVAL    // Onay Bekliyor
-  APPROVED            // Onaylandı
-  WON                 // Kazanıldı
-  LOST                // Kaybedildi
+generator client {
+  provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql" // mysql / sqlite ise değiştir
+  url      = env("DATABASE_URL")
+}
 
-  model Task {
-    id String @id @default(uuid())
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
 
-    organizationId String
-    organization   Organization @relation(fields: [organizationId], references: [id])
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  email    String @unique
+  password String
+  role     Role   @default(USER)
 
-    customerId String?
-    customer   Customer? @relation(fields: [customerId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-    title       String
-    description String?
+  ownedCustomers Customer[] @relation("CustomerOwner")
 
-    status  TaskStatus @default(OPEN)
-    dueDate DateTime?
+  // ✅ EKLENDİ
+  assignedTasks Task[]
 
-    activities Activity[]
+  // ✅ EKLENDİ
+  createdActivities Activity[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deletedAt DateTime?
+  refreshTokens RefreshToken[]
 
-    @@index([organizationId])
-    @@index([customerId])
-    @@index([status])
-    @@index([deletedAt])
-  }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  enum TaskStatus {
-    OPEN
-    IN_PROGRESS
-    DONE
-  }
+  @@index([organizationId])
+}
 
-  model Activity {
-    id String @id @default(uuid())
+model RefreshToken {
+  id           String   @id @default(uuid())
+  refreshToken String   @unique
+  expiredAt    DateTime
 
-    // 🔗 Relations
-    organizationId String
-    organization   Organization @relation(fields: [organizationId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-    customerId String?
-    customer   Customer? @relation(fields: [customerId], references: [id])
+model Organization {
+  id String @id @default(uuid())
 
-    taskId String?
-    task   Task?   @relation(fields: [taskId], references: [id])
+  // Identity
+  name             String
+  slug             String           @unique
+  organizationType OrganizationType
 
-    // 🧠 Activity Info
-    type        ActivityType
-    title       String
-    description String?
+  // Business info
+  legalName String?
+  industry  String?
+  website   String?
+  email     String?
+  phone     String?
 
-    // 👤 Auth (ileride)
-    createdByUserId String?
+  // Subscription
+  planType PlanType @default(FREE)
+  isActive Boolean  @default(true)
 
-    // 🕒 Audit
-    createdAt DateTime  @default(now())
-    deletedAt DateTime?
+  // Ownership (Auth / Super Admin)
+  ownerUserId String
 
-    @@index([organizationId])
-    @@index([customerId])
-    @@index([taskId])
-    @@index([type])
-    @@index([deletedAt])
-  }
+  // Relations
+  users      User[]
+  customers  Customer[]
+  activities Activity[]
+  tasks      Task[]
 
-  enum ActivityType {
-    CALL
-    EMAIL
-    NOTE
-    MEETING
-    TASK_CREATED
-    TASK_COMPLETED
-    STATUS_CHANGE
-  }
+  // Audit
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([ownerUserId])
+  @@index([isActive])
+  @@index([deletedAt])
+}
+
+enum OrganizationType {
+  COMPANY
+  CLUB
+  NGO
+}
+
+enum PlanType {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model Customer {
+  id String @id @default(uuid())
+
+  // Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // Ownership (CRM içi sorumlu)
+  ownerUserId String
+  owner       User   @relation("CustomerOwner", fields: [ownerUserId], references: [id])
+
+  // Personal / Company Info
+  fullName    String
+  email       String?
+  phone       String?
+  companyName String?
+  vatNumber   String?
+  website     String?
+  address     String?
+  description String?
+  designation String?
+
+  // CRM lifecycle
+  status CustomerStatus @default(NEW)
+
+  // Relations
+  activities Activity[]
+  tasks      Task[]
+
+  // Audit
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([organizationId])
+  @@index([ownerUserId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+enum CustomerStatus {
+  NEW // Yeni
+  CONTACTED // İletişim Kuruldu
+  OFFER_SENT // Teklif Gönderildi
+  WAITING_APPROVAL // Onay Bekliyor
+  APPROVED // Onaylandı
+  WON // Kazanıldı
+  LOST // Kaybedildi
+}
+
+model Task {
+  id String @id @default(uuid())
+
+  // 🌍 Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // 👤 Sorumlu Kişi
+  assignedUserId String
+  assignedUser   User   @relation(fields: [assignedUserId], references: [id])
+
+  // 👥 Customer (opsiyonel)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  // 🧾 Task bilgileri
+  title       String
+  description String?
+
+  // 📅 Tarihler
+  startDate DateTime?
+  endDate   DateTime?
+
+  // 🚦 Durum
+  status TaskStatus @default(NEW)
+
+  // ✅ EKLENDİ
+  activities Activity[]
+
+  // 🕒 Audit
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // ⚡ Indexler
+  @@index([organizationId])
+  @@index([assignedUserId])
+  @@index([customerId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([deletedAt])
+}
+
+enum TaskStatus {
+  NEW // Yeni
+  IN_PROGRESS // Devam Ediyor
+  ON_HOLD // Beklemede
+  COMPLETED // Tamamlandı
+}
+
+model Activity {
+  id String @id @default(uuid())
+
+  // 🌍 Multi-tenant
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  // 👤 Kim yaptı
+  createdByUserId String?
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id])
+
+  // ✅ Task ilişkisi (EKLENDİ)
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id])
+
+  // 🧠 Aktivite bilgisi
+  type        ActivityType
+  title       String
+  description String?
+
+  // 🕒 Audit
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  // ⚡ Performans indexleri
+  @@index([organizationId])
+  @@index([customerId])
+  @@index([createdByUserId])
+  @@index([type])
+  @@index([deletedAt])
+  @@index([taskId]) // ✅
+}
+
+enum ActivityType {
+  // Manuel
+  CALL
+  EMAIL
+  NOTE
+  MEETING
+
+  // Sistem olayları
+  TASK_CREATED
+  TASK_UPDATED
+  TASK_STATUS_CHANGED
+  TASK_COMPLETED
+
+  CUSTOMER_CREATED
+  CUSTOMER_UPDATED
+}

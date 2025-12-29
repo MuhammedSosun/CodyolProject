@@ -2,30 +2,38 @@ import { ApiProperty } from '@nestjs/swagger';
 import { TaskStatus } from '../enums/task-status.enum';
 
 export class TaskResponseDto {
-    @ApiProperty()
-    id: string;
+  @ApiProperty()
+  id: string;
 
-    @ApiProperty()
-    organizationId: string;
+  @ApiProperty()
+  organizationId: string;
 
-    @ApiProperty({ required: false })
-    customerId?: string | null;
+  // 🔹 YENİ (Task her zaman bir kullanıcıya atanır)
+  @ApiProperty()
+  assignedUserId: string;
 
-    @ApiProperty()
-    title: string;
+  @ApiProperty({ required: false })
+  customerId?: string | null;
 
-    @ApiProperty({ required: false })
-    description?: string | null;
+  @ApiProperty()
+  title: string;
 
-    @ApiProperty({ enum: TaskStatus })
-    status: TaskStatus;
+  @ApiProperty({ required: false })
+  description?: string | null;
 
-    @ApiProperty({ required: false })
-    dueDate?: Date | null;
+  @ApiProperty({ enum: TaskStatus })
+  status: TaskStatus;
 
-    @ApiProperty()
-    createdAt: Date;
+  // 🔹 YENİ (UI kolonları)
+  @ApiProperty({ required: false })
+  startDate?: Date | null;
 
-    @ApiProperty()
-    updatedAt: Date;
+  @ApiProperty({ required: false })
+  endDate?: Date | null;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
 }

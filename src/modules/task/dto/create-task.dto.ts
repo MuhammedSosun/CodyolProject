@@ -1,37 +1,60 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, IsUUID, IsDateString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  IsUUID,
+  IsDateString,
+} from 'class-validator';
 import { TaskStatus } from '../enums/task-status.enum';
 
 export class CreateTaskDto {
-    @ApiProperty({ example: 'org-uuid' })
-    @IsUUID()
-    @IsNotEmpty()
-    organizationId: string;
+  @ApiProperty({ example: 'org-uuid' })
+  @IsUUID()
+  @IsNotEmpty()
+  organizationId: string;
 
-    @ApiPropertyOptional({ example: 'customer-uuid' })
-    @IsOptional()
-    @IsUUID()
-    customerId?: string;
+  // 🔹 YENİ (zorunlu – Prisma’ya göre)
+  @ApiProperty({ example: 'user-uuid', description: 'Sorumlu kullanıcı' })
+  @IsUUID()
+  @IsNotEmpty()
+  assignedUserId: string;
 
-    @ApiProperty({ example: 'Teklif hazırlığı' })
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(160)
-    title: string;
+  @ApiPropertyOptional({ example: 'customer-uuid' })
+  @IsOptional()
+  @IsUUID()
+  customerId?: string;
 
-    @ApiPropertyOptional({ example: 'XYZ İnşaat için teklif dosyası hazırlanacak.' })
-    @IsOptional()
-    @IsString()
-    @MaxLength(1000)
-    description?: string;
+  @ApiProperty({ example: 'Teklif hazırlığı' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(160)
+  title: string;
 
-    @ApiPropertyOptional({ enum: TaskStatus, example: TaskStatus.OPEN })
-    @IsOptional()
-    @IsEnum(TaskStatus)
-    status?: TaskStatus;
+  @ApiPropertyOptional({
+    example: 'XYZ İnşaat için teklif dosyası hazırlanacak.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  description?: string;
 
-    @ApiPropertyOptional({ example: '2025-01-15T17:00:00Z' })
-    @IsOptional()
-    @IsDateString()
-    dueDate?: string;
+  // 🔁 OPEN → NEW
+  @ApiPropertyOptional({ enum: TaskStatus, example: TaskStatus.NEW })
+  @IsOptional()
+  @IsEnum(TaskStatus)
+  status?: TaskStatus;
+
+  // 🔹 YENİ (UI kolonları)
+  @ApiPropertyOptional({ example: '2025-01-10' })
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @ApiPropertyOptional({ example: '2025-01-20' })
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
 }
