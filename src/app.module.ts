@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { ProposalModule } from './modules/Proposal/proposal.module';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
     imports: [
@@ -19,7 +20,8 @@ import { ProposalModule } from './modules/Proposal/proposal.module';
         TaskModule,
         ActivityModule,
         AuthModule,
-        ProposalModule
+        ProposalModule,
+        ProfileModule
     ],
     providers: [
         {

@@ -19,17 +19,13 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class OrganizationController {
     constructor(private readonly service: OrganizationService) { }
 
-    // =========================
-    // CREATE
-    // =========================
+
     @Post()
     create(@Body() dto: CreateOrganizationDto) {
         return this.service.create(dto);
     }
 
-    // =========================
-    // READ
-    // =========================
+
     @Get()
     findAll() {
         return this.service.findAll();
@@ -45,9 +41,7 @@ export class OrganizationController {
         return this.service.findBySlug(slug);
     }
 
-    // =========================
-    // UPDATE
-    // =========================
+
     @Patch(':id')
     update(
         @Param('id') id: string,
@@ -56,9 +50,7 @@ export class OrganizationController {
         return this.service.update(id, dto);
     }
 
-    // =========================
-    // ACTIVATE / DEACTIVATE
-    // =========================
+
     @Patch(':id/activate')
     activate(@Param('id') id: string) {
         return this.service.activate(id);
@@ -69,9 +61,7 @@ export class OrganizationController {
         return this.service.deactivate(id);
     }
 
-    // =========================
-    // DELETE (SOFT)
-    // =========================
+
     @Delete(':id')
     delete(@Param('id') id: string) {
         return this.service.delete(id);

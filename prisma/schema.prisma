@@ -26,7 +26,7 @@
   ownedCustomers   Customer[] @relation("CustomerOwner")
   assignedTasks    Task[]
   createdActivities Activity[]
-
+  profile Profile?
   refreshTokens RefreshToken[]
 
   createdAt DateTime @default(now())
@@ -280,5 +280,24 @@
   APPROVED     // Kabul Edildi
 }
 
+model Profile {
+  id String @id @default(uuid())
+
+  // 🔗 One-to-One
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 👤 Kişisel bilgiler
+  firstName String?
+  lastName  String?
+  phone     String?
+  bio       String?
+  position  String?
+
+
+  // 🕒 Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 
