@@ -65,6 +65,8 @@
     // Ownership (Auth / Super Admin)
     ownerUserId String
 
+    proposals Proposal[]
+
     // Relations
     users      User[]
     customers  Customer[]
@@ -118,6 +120,8 @@
 
     // CRM lifecycle
     status CustomerStatus @default(NEW)
+
+    proposals Proposal[]
 
     // Relations
     activities Activity[]
@@ -221,3 +225,39 @@
     TASK_COMPLETED
     STATUS_CHANGE
   }
+  model Proposal{
+    id String @id @default(uuid())
+
+    organizationId String
+    organization   Organization @relation(fields: [organizationId], references: [id])
+
+    // Customer
+    customerId String
+    customer   Customer @relation(fields: [customerId], references: [id])
+
+    title      String
+    status     ProposalStatus @default(DRAFT)
+    validUntil DateTime
+
+    totalAmount Decimal? @db.Decimal(12, 2)
+    currency    String   @default("TRY")
+
+    createdByUserId String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    deletedAt DateTime?
+
+    @@index([organizationId])
+    @@index([customerId])
+
+  }
+  enum ProposalStatus {
+  DRAFT        // Taslak
+  SENT         // Gönderildi
+  EXPIRED      // Süresi Doldu
+  REJECTED     // Reddedildi
+  APPROVED     // Kabul Edildi
+}
+
+
+

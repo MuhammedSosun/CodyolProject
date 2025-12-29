@@ -9,6 +9,7 @@ import { ActivityModule } from './modules/activity/activity.module';
 import { AuthModule } from './modules/auth/auth.module';
 
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { ProposalModule } from './modules/Proposal/proposal.module';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
         TaskModule,
         ActivityModule,
         AuthModule,
+        ProposalModule
     ],
     providers: [
         {
