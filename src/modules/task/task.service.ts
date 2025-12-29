@@ -10,61 +10,66 @@ import { TaskStatus as PrismaTaskStatus } from '@prisma/client';
 
 @Injectable()
 export class TaskService {
+
   constructor(
     private readonly repo: TaskRepository,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
-  async create(dto: CreateTaskDto) {
-    const org = await this.prisma.organization.findFirst({
-      where: { id: dto.organizationId, deletedAt: null },
-    });
-    if (!org) throw new NotFoundException('Organization not found');
-
-    const user = await this.prisma.user.findFirst({
-      where: { id: dto.assignedUserId },
-    });
-    if (!user) throw new NotFoundException('Assigned user not found');
-
+  async create(
+    dto: CreateTaskDto,
+    organizationId: string,
+    assignedUserId: string,
+  ) {
     if (dto.customerId) {
       const customer = await this.prisma.customer.findFirst({
         where: {
           id: dto.customerId,
-          organizationId: dto.organizationId,
+          organizationId,
           deletedAt: null,
         },
       });
       if (!customer) throw new NotFoundException('Customer not found');
     }
 
-        const task = await this.repo.create({
+    const task = await this.repo.create({
       title: dto.title,
       description: dto.description,
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
-
       status: (dto.status ?? 'NEW') as PrismaTaskStatus,
 
-      // ✅ SADECE ID
-      organizationId: dto.organizationId,
-      assignedUserId: dto.assignedUserId,
-
-      ...(dto.customerId
-        ? { customerId: dto.customerId }
-        : {}),
+      organizationId,
+      assignedUserId,
+      customerId: dto.customerId ?? null,
     });
-
 
     return this.toResponse(task);
   }
 
-  async list(query: any) {
+  async findOne(id: string, organizationId: string) {
+    const task = await this.repo.findByIdAndOrg(id, organizationId);
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    return this.toResponse(task);
+  }
+
+
+
+  async list(
+    organizationId: string,
+    query: any,
+  ) {
     const page = Number(query.page ?? 1);
     const limit = Number(query.limit ?? 10);
 
-    const where: any = {};
+    const where: any = {
+      organizationId,
+    };
 
-    if (query.organizationId) where.organizationId = query.organizationId;
     if (query.customerId) where.customerId = query.customerId;
     if (query.assignedUserId) where.assignedUserId = query.assignedUserId;
     if (query.status) where.status = query.status;
@@ -80,6 +85,7 @@ export class TaskService {
       data: items.map((t) => this.toResponse(t)),
     };
   }
+
 
   async update(
     id: string,
