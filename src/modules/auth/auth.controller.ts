@@ -31,14 +31,10 @@ export class AuthController {
         return this.authService.refresh(dto);
     }
 
-
-
-
     @ApiBearerAuth('JWT-auth')
     @UseGuards(JwtAuthGuard)
     @Post('logout')
     logout(@Req() req) {
         return this.authService.logout(req.user.userId);
     }
-
 }
