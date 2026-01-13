@@ -11,6 +11,11 @@ async function bootstrap() {
     origin: 'http://localhost:4000',
     credentials: true,
   });
+  app.use((req, res, next) => {
+  console.log('➡️ INCOMING:', req.method, req.url);
+  next();
+});
+
 
 
   // 🔥 BU SATIR HER ŞEYİ DÜZELTİR

@@ -8,40 +8,55 @@ import {
     Post,
     Query,
     Req,
+    UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CustomerListQueryDto } from './dto/customer-list-query.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Customer')
 @ApiBearerAuth('JWT-auth')
-@Controller('customers')
+@UseGuards(JwtAuthGuard)
+@Controller('api/customers')
 export class CustomerController {
-    constructor(private readonly service: CustomerService) { }
+  constructor(private readonly service: CustomerService) {}
+  @Post()
+create(@Body() dto: CreateCustomerDto, @Req() req) {
+  console.log('✅ CONTROLLER HIT');
+  console.log('RAW DTO:', dto);
+  console.log('USER:', req.user);
 
-    @Post()
-    create(@Body() dto: CreateCustomerDto, @Req() req) {
-        return this.service.create(dto, req.user);
-    }
+  // 🔥 boş string’leri temizle
+  const cleanedDto = Object.fromEntries(
+    Object.entries(dto).filter(
+      ([_, value]) => value !== '' && value !== null
+    )
+  ) as CreateCustomerDto;
 
-    @Get()
-    list(@Query() query: CustomerListQueryDto, @Req() req) {
-        return this.service.list(query, req.user);
-    }
+  console.log('CLEAN DTO:', cleanedDto);
 
-    @Patch(':id')
-    update(
-        @Param('id') id: string,
-        @Body() dto: UpdateCustomerDto,
-        @Req() req,
-    ) {
-        return this.service.update(id, dto, req.user);
-    }
+  return this.service.create(cleanedDto, req.user);
+}
 
-    @Delete(':id')
-    delete(@Param('id') id: string, @Req() req) {
-        return this.service.delete(id, req.user);
-    }
+
+  @Get()
+  list(@Query() query: CustomerListQueryDto) {
+    return this.service.list(query);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCustomerDto,
+  ) {
+    return this.service.update(id, dto);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string) {
+    return this.service.delete(id);
+  }
 }

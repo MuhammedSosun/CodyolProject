@@ -26,7 +26,7 @@ export class CustomerListQueryDto extends PaginationQueryDto {
     @IsEnum(CustomerStatus)
     status?: CustomerStatus;
 
-    @ApiPropertyOptional({ example: 'ali' })
+    @ApiPropertyOptional({ example: '' })
     @IsOptional()
     @IsString()
     search?: string;

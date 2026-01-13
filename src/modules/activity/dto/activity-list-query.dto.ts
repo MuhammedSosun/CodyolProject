@@ -4,10 +4,7 @@ import { ActivityType } from '@prisma/client';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 
 export class ActivityListQueryDto extends PaginationQueryDto {
-    @ApiPropertyOptional()
-    @IsUUID()
-    @IsOptional()
-    organizationId?: string;
+   
 
     @ApiPropertyOptional()
     @IsUUID()

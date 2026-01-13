@@ -5,8 +5,6 @@ export class TaskResponseDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty()
-  organizationId: string;
 
   // 🔹 YENİ (Task her zaman bir kullanıcıya atanır)
   @ApiProperty()

@@ -20,9 +20,6 @@
   password String
   role     Role   @default(USER)
 
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
   ownedCustomers   Customer[] @relation("CustomerOwner")
   assignedTasks    Task[]
   createdActivities Activity[]
@@ -32,7 +29,7 @@
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([organizationId])
+  deletedAt DateTime?
 }
 
 
@@ -45,54 +42,6 @@
     user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   }
 
-
-  model Organization {
-    id String @id @default(uuid())
-
-    // Identity
-    name             String
-    slug             String           @unique
-    organizationType OrganizationType
-
-    // Business info
-    legalName String?
-    industry  String?
-    website   String?
-    email     String?
-    phone     String?
-
-    // Subscription
-    planType PlanType @default(FREE)
-    isActive Boolean  @default(true)
-
-    // Ownership (Auth / Super Admin)
-    ownerUserId String
-
-    proposals Proposal[]
-
-    // Relations
-    users      User[]
-    customers  Customer[]
-    activities Activity[]
-    tasks      Task[]
-
-    // Audit
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deletedAt DateTime?
-
-    @@index([ownerUserId])
-    @@index([isActive])
-    @@index([deletedAt])
-  }
-
-
-  enum OrganizationType {
-    COMPANY
-    CLUB
-    NGO
-  }
-
   enum PlanType {
     FREE
     PRO
@@ -100,46 +49,35 @@
   }
 
   model Customer {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    // Multi-tenant
-    organizationId String
-    organization   Organization @relation(fields: [organizationId], references: [id])
+  ownerUserId String
+  owner       User @relation("CustomerOwner", fields: [ownerUserId], references: [id])
 
-    // Ownership (CRM içi sorumlu)
-    ownerUserId String
-    owner       User @relation("CustomerOwner", fields: [ownerUserId], references: [id])
+  fullName   String
+  email       String?
+  phone       String?
+  companyName String?
+  vatNumber   String?
+  website     String?
+  address     String?
+  description String?
+  designation String?
 
-    // Personal / Company Info
-    fullName   String
-    email       String?
-    phone       String?
-    companyName String?
-    vatNumber   String?
-    website     String?
-    address     String?
-    description String?
-    designation String?
+  status CustomerStatus @default(NEW)
 
-    // CRM lifecycle
-    status CustomerStatus @default(NEW)
+  activities Activity[]
+  tasks      Task[]
+  proposals  Proposal[]
 
-    proposals Proposal[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-    // Relations
-    activities Activity[]
-    tasks      Task[]
-
-    // Audit
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    deletedAt DateTime?
-
-    @@index([organizationId])
-    @@index([ownerUserId])
-    @@index([status])
-    @@index([deletedAt])
-  }
+  @@index([ownerUserId])
+  @@index([status])
+  @@index([deletedAt])
+}
 
 
 
@@ -154,11 +92,8 @@
 }
 
 
-  model Task {
+ model Task {
   id String @id @default(uuid())
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
 
   assignedUserId String
   assignedUser   User @relation(fields: [assignedUserId], references: [id])
@@ -180,14 +115,12 @@
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
-  @@index([organizationId])
   @@index([assignedUserId])
   @@index([customerId])
   @@index([status])
-  @@index([startDate])
-  @@index([endDate])
   @@index([deletedAt])
 }
+
 
  enum TaskStatus {
   NEW
@@ -199,9 +132,6 @@
 
   model Activity {
   id String @id @default(uuid())
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
 
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
@@ -219,11 +149,9 @@
   createdAt DateTime @default(now())
   deletedAt DateTime?
 
-  @@index([organizationId])
   @@index([customerId])
   @@index([createdByUserId])
   @@index([type])
-  @@index([deletedAt])
   @@index([taskId])
 }
 
@@ -246,32 +174,27 @@
   PROPOSAL_STATUS_CHANGED
 }
 
-  model Proposal{
-    id String @id @default(uuid())
+model Proposal {
+  id String @id @default(uuid())
 
-    organizationId String
-    organization   Organization @relation(fields: [organizationId], references: [id])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
 
-    // Customer
-    customerId String
-    customer   Customer @relation(fields: [customerId], references: [id])
+  title      String
+  status     ProposalStatus @default(DRAFT)
+  validUntil DateTime
 
-    title      String
-    status     ProposalStatus @default(DRAFT)
-    validUntil DateTime
+  totalAmount Decimal? @db.Decimal(12, 2)
+  currency    String   @default("TRY")
 
-    totalAmount Decimal? @db.Decimal(12, 2)
-    currency    String   @default("TRY")
+  createdByUserId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
-    createdByUserId String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    deletedAt DateTime?
+  @@index([customerId])
+}
 
-    @@index([organizationId])
-    @@index([customerId])
-
-  }
   enum ProposalStatus {
   DRAFT        // Taslak
   SENT         // Gönderildi

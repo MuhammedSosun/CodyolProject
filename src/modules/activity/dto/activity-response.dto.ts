@@ -5,8 +5,6 @@ export class ActivityResponseDto {
     @ApiProperty()
     id: string;
 
-    @ApiProperty()
-    organizationId: string;
 
     @ApiProperty({ required: false })
     customerId?: string | null;

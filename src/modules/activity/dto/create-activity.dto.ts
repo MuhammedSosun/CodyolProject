@@ -3,10 +3,7 @@ import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'cla
 import { ActivityType } from '@prisma/client';
 
 export class CreateActivityDto {
-    @ApiProperty({ example: 'org-uuid' })
-    @IsUUID()
-    @IsNotEmpty()
-    organizationId: string;
+
 
     @ApiPropertyOptional({ example: 'customer-uuid' })
     @IsOptional()

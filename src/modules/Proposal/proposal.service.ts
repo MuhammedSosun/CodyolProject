@@ -7,53 +7,45 @@ import { ProposalListQueryDto } from './dto/proposal-list-query.dto';
 
 @Injectable()
 export class ProposalService {
-    constructor(private readonly repo: ProposalRepository) { }
+  constructor(private readonly repo: ProposalRepository) {}
 
-    create(dto: CreateProposalDto, organizationId: string, userId: string) {
-        return this.repo.create({
-            dto,
-            organizationId,
-            createdByUserId: userId,
-        });
-    }
+  create(dto: CreateProposalDto, userId: string) {
+    return this.repo.create(dto, userId);
+  }
 
-    findAll(organizationId: string) {
-        return this.repo.findAll(organizationId);
-    }
+  findAll(userId: string) {
+    return this.repo.findAll(userId);
+  }
 
-    async findOne(id: string, organizationId: string) {
-        const proposal = await this.repo.findById(id, organizationId);
-        if (!proposal) {
-            throw new NotFoundException('Teklif bulunamadı');
-        }
-        return proposal;
-    }
+  async findOne(id: string, userId: string) {
+    const proposal = await this.repo.findById(id, userId);
+    if (!proposal) throw new NotFoundException('Teklif bulunamadı');
+    return proposal;
+  }
 
-    update(id: string, dto: UpdateProposalDto) {
-        return this.repo.update(id, dto);
-    }
+  update(id: string, dto: UpdateProposalDto, userId: string) {
+    return this.repo.update(id, userId, dto);
+  }
 
-    delete(id: string) {
-        return this.repo.softDelete(id);
-    }
-    async list(
-        organizationId: string,
-        query: ProposalListQueryDto,
-    ) {
-        const result = await this.repo.findForList(organizationId, query);
+  delete(id: string, userId: string) {
+    return this.repo.softDelete(id, userId);
+  }
 
-        return {
-            ...result,
-            items: result.items.map((p) => ({
-                id: p.id,
-                title: p.title,
-                totalAmount: p.totalAmount,
-                currency: p.currency,
-                status: p.status,
-                createdAt: p.createdAt,
-                customerName: p.customer.fullName,
-                customerEmail: p.customer.email,
-            })),
-        };
-    }
+  async list(userId: string, query: ProposalListQueryDto) {
+    const result = await this.repo.findForList(userId, query);
+
+    return {
+      ...result,
+      items: result.items.map((p) => ({
+        id: p.id,
+        title: p.title,
+        totalAmount: p.totalAmount,
+        currency: p.currency,
+        status: p.status,
+        createdAt: p.createdAt,
+        customerName: p.customer?.fullName,
+        customerEmail: p.customer?.email,
+      })),
+    };
+  }
 }

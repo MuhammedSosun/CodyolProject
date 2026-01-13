@@ -19,73 +19,38 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Proposals')
 @ApiBearerAuth('JWT-auth')
-@Controller('proposals')
+@UseGuards(JwtAuthGuard)
+@Controller('api/proposals')
 export class ProposalController {
-    constructor(private readonly service: ProposalService) { }
+  constructor(private readonly service: ProposalService) {}
 
-    @UseGuards(JwtAuthGuard)
-    @Post()
-    create(
-        @Req() req,
-        @Body() dto: CreateProposalDto,
-    ) {
-        return this.service.create(
-            dto,
-            req.user.organizationId,
-            req.user.id,
-        );
-    }
+  @Post()
+  create(@Req() req, @Body() dto: CreateProposalDto) {
+    return this.service.create(dto, req.user.id);
+  }
 
-    // 🔥 LIST MUTLAKA EN ÜSTTE
-    @UseGuards(JwtAuthGuard)
-    @Get('list')
-    list(
-        @Req() req,
-        @Query() query: ProposalListQueryDto,
-    ) {
-        console.log('LIST HIT');
-        console.log('ORG:', req.user.organizationId);
+  @Get('list')
+  list(@Req() req, @Query() query: ProposalListQueryDto) {
+    return this.service.list(req.user.id, query);
+  }
 
-        return this.service.list(
-            req.user.organizationId,
-            query,
-        );
-    }
+  @Get()
+  findAll(@Req() req) {
+    return this.service.findAll(req.user.id);
+  }
 
-    @UseGuards(JwtAuthGuard)
-    @Get()
-    findAll(
-        @Req() req,
-    ) {
-        return this.service.findAll(req.user.organizationId);
-    }
+  @Get(':id')
+  findOne(@Param('id') id: string, @Req() req) {
+    return this.service.findOne(id, req.user.id);
+  }
 
-    @UseGuards(JwtAuthGuard)
-    @Get(':id')
-    findOne(
-        @Param('id') id: string,
-        @Req() req,
-    ) {
-        return this.service.findOne(
-            id,
-            req.user.organizationId,
-        );
-    }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateProposalDto, @Req() req) {
+    return this.service.update(id, dto, req.user.id);
+  }
 
-    @UseGuards(JwtAuthGuard)
-    @Patch(':id')
-    update(
-        @Param('id') id: string,
-        @Body() dto: UpdateProposalDto,
-    ) {
-        return this.service.update(id, dto);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Delete(':id')
-    delete(
-        @Param('id') id: string,
-    ) {
-        return this.service.delete(id);
-    }
+  @Delete(':id')
+  delete(@Param('id') id: string, @Req() req) {
+    return this.service.delete(id, req.user.id);
+  }
 }
