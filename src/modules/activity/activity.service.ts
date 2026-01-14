@@ -1,17 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ActivityRepository } from './activity.repository';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
-import { ActivityResponseDto } from './dto/activity-response.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
 import { ActivityListQueryDto } from './dto/activity-list-query.dto';
 
 @Injectable()
 export class ActivityService {
   constructor(
-    private readonly repo: ActivityRepository,
     private readonly prisma: PrismaService,
   ) {}
 
+  // 🔹 CREATE
   async create(dto: CreateActivityDto, userId: string) {
     if (dto.customerId) {
       const customer = await this.prisma.customer.findFirst({
@@ -27,39 +26,43 @@ export class ActivityService {
       if (!task) throw new NotFoundException('Task not found');
     }
 
-    const activity = await this.repo.create({
-      createdByUser: { connect: { id: userId } },
-      ...(dto.customerId
-        ? { customer: { connect: { id: dto.customerId } } }
-        : {}),
-      ...(dto.taskId
-        ? { task: { connect: { id: dto.taskId } } }
-        : {}),
-      type: dto.type,
-      title: dto.title,
-      description: dto.description,
+    const activity = await this.prisma.activity.create({
+      data: {
+        createdByUserId: userId,
+        customerId: dto.customerId ?? null,
+        taskId: dto.taskId ?? null,
+        type: dto.type,
+        title: dto.title,
+        description: dto.description,
+      },
     });
 
     return this.toResponse(activity);
   }
 
-  async delete(id: string, userId: string) {
-    const deleted = await this.repo.softDeleteSafe(id, userId);
-    if (!deleted) throw new NotFoundException('Activity not found');
-  }
-
+  // 🔹 LIST (TIMELINE)
   async list(userId: string, query: ActivityListQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
 
-    const { items, total } = await this.repo.list({
+    const where: any = {
       createdByUserId: userId,
-      customerId: query.customerId,
-      taskId: query.taskId,
-      type: query.type,
-      page,
-      limit,
-    });
+      deletedAt: null,
+    };
+
+    if (query.customerId) where.customerId = query.customerId;
+    if (query.taskId) where.taskId = query.taskId;
+    if (query.type) where.type = query.type;
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.activity.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.activity.count({ where }),
+    ]);
 
     return {
       meta: {
@@ -70,6 +73,98 @@ export class ActivityService {
       },
       data: items.map((a) => this.toResponse(a)),
     };
+  }
+
+  // 🔹 GET BY ID (DETAIL)
+  async getById(id: string, userId: string) {
+  const activity: any = await this.prisma.activity.findFirst({
+    where: {
+      id,
+      deletedAt: null,
+      createdByUserId: userId,
+    },
+    include: {
+      customer: {
+        select: { id: true, fullName: true, email: true },
+      },
+      task: {
+        select: { id: true, title: true, status: true, customerId: true },
+      },
+      createdByUser: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          profile: {
+            select: { firstName: true, lastName: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!activity) {
+    throw new NotFoundException('Activity not found');
+  }
+
+  const createdByFullName =
+    activity.createdByUser?.profile?.firstName || activity.createdByUser?.profile?.lastName
+      ? `${activity.createdByUser?.profile?.firstName ?? ''} ${activity.createdByUser?.profile?.lastName ?? ''}`.trim()
+      : null;
+
+  return {
+    id: activity.id,
+    type: activity.type,
+    title: activity.title,
+    description: activity.description,
+    createdAt: activity.createdAt,
+
+    customer: activity.customer, // {id, fullName, email}
+    task: activity.task,         // {id, title, status, customerId}
+    createdByUser: activity.createdByUser
+      ? {
+          id: activity.createdByUser.id,
+          username: activity.createdByUser.username,
+          email: activity.createdByUser.email,
+          fullName: createdByFullName, // profile'dan türetilmiş
+        }
+      : null,
+  };
+}
+
+
+  // 🔹 UPDATE
+  async update(id: string, userId: string, dto: UpdateActivityDto) {
+    const updated = await this.prisma.activity.updateMany({
+      where: {
+        id,
+        createdByUserId: userId,
+        deletedAt: null,
+      },
+      data: dto,
+    });
+
+    if (updated.count === 0) {
+      throw new NotFoundException('Activity not found');
+    }
+
+    return { success: true };
+  }
+
+  // 🔹 DELETE (SOFT)
+  async delete(id: string, userId: string) {
+    const deleted = await this.prisma.activity.updateMany({
+      where: {
+        id,
+        createdByUserId: userId,
+        deletedAt: null,
+      },
+      data: { deletedAt: new Date() },
+    });
+
+    if (deleted.count === 0) {
+      throw new NotFoundException('Activity not found');
+    }
   }
 
   private toResponse(a: any) {

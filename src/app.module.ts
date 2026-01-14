@@ -10,7 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { ProposalModule } from './modules/Proposal/proposal.module';
 import { ProfileModule } from './modules/profile/profile.module';
-import { TeamsModule } from './team/teams.module';
+import { TeamsModule } from './modules/team/teams.module';
 
 @Module({
     imports: [

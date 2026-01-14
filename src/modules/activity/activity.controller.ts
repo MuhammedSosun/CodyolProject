@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -12,13 +13,14 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ActivityService } from './activity.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
 import { ActivityListQueryDto } from './dto/activity-list-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Activity')
 @UseGuards(JwtAuthGuard)
-@Controller('activities')
+@Controller('api/activities')
 export class ActivityController {
   constructor(private readonly service: ActivityService) {}
 
@@ -32,6 +34,22 @@ export class ActivityController {
   @ApiOperation({ summary: 'List activities (timeline)' })
   list(@Req() req, @Query() query: ActivityListQueryDto) {
     return this.service.list(req.user.id, query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get activity detail' })
+  getById(@Req() req, @Param('id') id: string) {
+    return this.service.getById(id, req.user.id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update activity' })
+  update(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateActivityDto,
+  ) {
+    return this.service.update(id, req.user.id, dto);
   }
 
   @Delete(':id')

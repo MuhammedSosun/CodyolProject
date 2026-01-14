@@ -64,6 +64,16 @@ export class CustomerService {
     });
   }
 
+  async findOne(id: string) {
+    const customer = await this.repo.findById(id);
+
+    if(!customer){
+      throw new NotFoundException('Customer not found');
+    }
+
+    return this.toResponse(customer);
+  }
+
   async list(query: CustomerListQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;

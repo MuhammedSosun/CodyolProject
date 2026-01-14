@@ -6,17 +6,19 @@ import { TaskRepository } from './task.repository';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { TaskStatus as PrismaTaskStatus } from '@prisma/client';
+import { TaskStatus as PrismaTaskStatus, ActivityType } from '@prisma/client';
 import { Prisma } from '@prisma/client';
-
+import { ActivityService } from '../activity/activity.service';
 
 @Injectable()
 export class TaskService {
   constructor(
     private readonly repo: TaskRepository,
     private readonly prisma: PrismaService,
+    private readonly activityService: ActivityService,
   ) {}
 
+  // ✅ TASK CREATE
   async create(dto: CreateTaskDto, assignedUserId: string) {
     if (dto.customerId) {
       const customer = await this.prisma.customer.findFirst({
@@ -35,9 +37,23 @@ export class TaskService {
       customerId: dto.customerId ?? null,
     });
 
+    // 🔥 OTOMATİK ACTIVITY (TASK CREATED)
+    if (task.customerId) {
+      await this.activityService.create(
+        {
+          customerId: task.customerId,
+          taskId: task.id,
+          type: ActivityType.TASK_CREATED,
+          title: `Görev oluşturuldu: ${task.title}`,
+        },
+        assignedUserId
+      );
+    }
+
     return this.toResponse(task);
   }
 
+  // ✅ TASK DETAIL
   async findOne(id: string, userId: string) {
     const task = await this.repo.findById(id);
     if (!task || task.assignedUserId !== userId) {
@@ -46,6 +62,7 @@ export class TaskService {
     return this.toResponse(task);
   }
 
+  // ✅ TASK LIST
   async list(userId: string, query: any) {
     const page = Number(query.page ?? 1);
     const limit = Number(query.limit ?? 10);
@@ -65,6 +82,7 @@ export class TaskService {
     };
   }
 
+  // ✅ TASK UPDATE
   async update(id: string, userId: string, dto: UpdateTaskDto) {
     const current = await this.repo.findById(id);
     if (!current || current.assignedUserId !== userId) {
@@ -91,9 +109,27 @@ export class TaskService {
     const updated = await this.repo.updateSafe(id, data);
     if (!updated) throw new NotFoundException('Task not found');
 
+    // 🔥 STATUS DEĞİŞTİYSE ACTIVITY
+    if (
+      dto.status !== undefined &&
+      dto.status !== current.status &&
+      updated.customerId
+    ) {
+      await this.activityService.create(
+        {
+          customerId: updated.customerId,
+          taskId: updated.id,
+          type: ActivityType.TASK_STATUS_CHANGED,
+          title: `Görev durumu güncellendi: ${updated.title}`,
+        },
+        userId
+      );
+    }
+
     return this.toResponse(updated);
   }
 
+  // ✅ TASK DELETE (soft)
   async delete(id: string, userId: string) {
     const result = await this.prisma.task.updateMany({
       where: { id, assignedUserId: userId, deletedAt: null },

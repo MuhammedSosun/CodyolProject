@@ -41,6 +41,12 @@ create(@Body() dto: CreateCustomerDto, @Req() req) {
   return this.service.create(cleanedDto, req.user);
 }
 
+@Get(':id')
+@ApiOperation({ summary: 'Get customer by id'})
+getById(@Param('id') id: string){
+  return this.service.findOne(id);
+}
+
 
   @Get()
   list(@Query() query: CustomerListQueryDto) {
