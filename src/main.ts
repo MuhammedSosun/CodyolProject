@@ -34,11 +34,16 @@ async function bootstrap() {
     .setTitle('Codyol CRM API')
     .setDescription('CRM Backend API Documentation')
     .setVersion('1.0')
-    .addSecurity('JWT-auth', {
-      type: 'apiKey',
-      name: 'Authorization',
-      in: 'header',
-    })
+    .addBearerAuth(
+  {
+    type: 'http',
+    scheme: 'bearer',
+    bearerFormat: 'JWT',
+    description: 'Sadece JWT token gir, Bearer otomatik eklenir',
+  },
+  'JWT-auth',
+)
+
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

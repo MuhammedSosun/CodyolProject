@@ -15,19 +15,22 @@ import { ProposalService } from './proposal.service';
 import { CreateProposalDto } from './dto/create-proposal.dto';
 import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { ProposalListQueryDto } from './dto/proposal-list-query.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+
 
 @ApiTags('Proposals')
 @ApiBearerAuth('JWT-auth')
-@UseGuards(JwtAuthGuard)
 @Controller('api/proposals')
 export class ProposalController {
   constructor(private readonly service: ProposalService) {}
 
   @Post()
-  create(@Req() req, @Body() dto: CreateProposalDto) {
-    return this.service.create(dto, req.user.id);
-  }
+create(@Req() req, @Body() dto: CreateProposalDto) {
+  console.log('AUTH HEADER:', req.headers.authorization);
+  console.log('USER:', req.user);
+  return this.service.create(dto, req.user.id);
+}
+
 
   @Get('list')
   list(@Req() req, @Query() query: ProposalListQueryDto) {

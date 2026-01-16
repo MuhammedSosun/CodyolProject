@@ -18,9 +18,11 @@ import { CustomerListQueryDto } from './dto/customer-list-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Customer')
 @ApiBearerAuth('JWT-auth')
+@Public()
 @Controller('api/customers')
 export class CustomerController {
   constructor(private readonly service: CustomerService) {}
@@ -42,13 +44,11 @@ getById(@Param('id') id: string, @Req() req) {
 
 
   @Patch(':id')
-  @Roles(Role.ADMIN)
   update(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
   delete(@Param('id') id: string) {
     return this.service.delete(id);
   }
