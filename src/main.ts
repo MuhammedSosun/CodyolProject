@@ -2,6 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
 import 'dotenv/config';
 
 async function bootstrap() {
@@ -11,22 +14,20 @@ async function bootstrap() {
     origin: 'http://localhost:4000',
     credentials: true,
   });
-  app.use((req, res, next) => {
-  console.log('➡️ INCOMING:', req.method, req.url);
-  next();
-});
 
-
-
-  // 🔥 BU SATIR HER ŞEYİ DÜZELTİR
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
       whitelist: true,
     }),
+  );
+
+  const reflector = app.get(Reflector);
+
+  // 🔐 GLOBAL GÜVENLİK
+  app.useGlobalGuards(
+    new JwtAuthGuard(reflector),
+    new RolesGuard(reflector),
   );
 
   const config = new DocumentBuilder()
@@ -37,28 +38,12 @@ async function bootstrap() {
       type: 'apiKey',
       name: 'Authorization',
       in: 'header',
-      description: 'Sadece JWT token gir (Bearer otomatik eklenir)',
     })
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
-  SwaggerModule.setup('api', app, document, {
-    swaggerOptions: {
-      requestInterceptor: (req: { headers: { Authorization?: string } }) => {
-        if (
-          req.headers.Authorization &&
-          !req.headers.Authorization.startsWith('Bearer ')
-        ) {
-          req.headers.Authorization = `Bearer ${req.headers.Authorization}`;
-        }
-        return req;
-      },
-    },
-  });
+  SwaggerModule.setup('api', app, document);
 
   await app.listen(3050);
 }
-
 bootstrap();
-

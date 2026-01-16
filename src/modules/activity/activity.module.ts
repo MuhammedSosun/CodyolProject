@@ -9,7 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
   providers: [
     ActivityService,
     ActivityRepository,
-    PrismaService, // 🔥 EKLENDİ
+    PrismaService, 
   ],
   exports: [ActivityService],
 })

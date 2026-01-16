@@ -64,15 +64,22 @@ export class CustomerService {
     });
   }
 
-  async findOne(id: string) {
-    const customer = await this.repo.findById(id);
+  async findOne(id: string, user: any) {
+  const customer = await this.repo.findById(id);
 
-    if(!customer){
-      throw new NotFoundException('Customer not found');
-    }
-
-    return this.toResponse(customer);
+  if (!customer) {
+    throw new NotFoundException('Customer not found');
   }
+
+  // ŞİMDİLİK SADECE ADMIN VAR AMA...
+  if (customer.ownerUserId !== user.id) {
+  throw new UnauthorizedException('Bu müşteriye erişemezsin');
+}
+
+
+  return this.toResponse(customer);
+}
+
 
   async list(query: CustomerListQueryDto) {
     const page = query.page ?? 1;
