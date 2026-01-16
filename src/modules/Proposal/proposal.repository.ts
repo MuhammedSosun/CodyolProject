@@ -16,6 +16,7 @@ export class ProposalRepository {
         customerId: dto.customerId,
         validUntil: new Date(dto.validUntil),
         status: dto.status,
+        totalAmount: dto.totalAmount, 
         createdByUserId: userId,
       },
     });

@@ -7,6 +7,7 @@ import {
     IsUUID,
     IsDateString,
     MaxLength,
+    IsNumber,
 } from 'class-validator';
 import { ProposalStatus } from '@prisma/client';
 
@@ -43,4 +44,13 @@ export class CreateProposalDto {
     @IsOptional()
     @IsEnum(ProposalStatus)
     status?: ProposalStatus;
+
+        @ApiPropertyOptional({
+        example: '150000.00',
+        description: 'Teklif toplam tutarı',
+    })
+    @IsOptional()
+    @IsNumber()
+    totalAmount?: number;
+
 }
