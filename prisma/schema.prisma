@@ -25,6 +25,7 @@
   createdActivities Activity[]
   profile Profile?
   refreshTokens RefreshToken[]
+    teamMemberships TeamMember[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -223,4 +224,33 @@ model Profile {
   updatedAt DateTime @updatedAt
 }
 
+model Team {
+  id        String @id @default(uuid())
+  name      String @unique
+
+  members   TeamMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+}
+
+model TeamMember {
+  id        String @id @default(uuid())
+
+  teamId    String
+  userId    String
+
+  team      Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // İstersen ekip içi rol (opsiyonel)
+  role      String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([teamId, userId]) // aynı user aynı team'e 2 kere eklenmesin
+  @@index([teamId])
+  @@index([userId])
+}
 
