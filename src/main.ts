@@ -14,13 +14,12 @@ async function bootstrap() {
     origin: 'http://localhost:4000',
     credentials: true,
   });
-<<<<<<< HEAD
-=======
+
+  // ✅ SERIF'TEN GELEN REQUEST LOGGER – BİLİNÇLİ OLARAK KALIYOR
   app.use((req, res, next) => {
     console.log('➡️ INCOMING:', req.method, req.url);
     next();
   });
->>>>>>> serif-feature-teams
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -42,15 +41,14 @@ async function bootstrap() {
     .setDescription('CRM Backend API Documentation')
     .setVersion('1.0')
     .addBearerAuth(
-  {
-    type: 'http',
-    scheme: 'bearer',
-    bearerFormat: 'JWT',
-    description: 'Sadece JWT token gir, Bearer otomatik eklenir',
-  },
-  'JWT-auth',
-)
-
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Sadece JWT token gir, Bearer otomatik eklenir',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -58,4 +56,5 @@ async function bootstrap() {
 
   await app.listen(3050);
 }
+
 bootstrap();
