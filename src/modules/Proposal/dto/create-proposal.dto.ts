@@ -8,6 +8,7 @@ import {
     IsDateString,
     MaxLength,
     IsNumber,
+    IsDecimal,
 } from 'class-validator';
 import { ProposalStatus } from '@prisma/client';
 
@@ -50,7 +51,12 @@ export class CreateProposalDto {
         description: 'Teklif toplam tutarı',
     })
     @IsOptional()
-    @IsNumber()
-    totalAmount?: number;
+@IsDecimal({ decimal_digits: '0,2' })
+@ApiPropertyOptional({
+  example: '150000.00',
+  description: 'Teklif toplam tutarı',
+})
+totalAmount?: string;
+
 
 }

@@ -22,7 +22,6 @@ import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Customer')
 @ApiBearerAuth('JWT-auth')
-@Public()
 @Controller('api/customers')
 export class CustomerController {
   constructor(private readonly service: CustomerService) {}
