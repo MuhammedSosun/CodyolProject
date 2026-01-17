@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, IsUrl, Matches, MaxLength } from 'class-validator';
 import { CustomerStatus } from '@prisma/client';
 
 export class CreateCustomerDto {
@@ -8,31 +8,54 @@ export class CreateCustomerDto {
     @MaxLength(160)
     fullName: string;
 
-    @ApiPropertyOptional()
-    @IsOptional()
-    @IsEmail()
-    email?: string;
+    @ApiProperty({
+  example: 'ornek@firma.com',
+  description: 'Müşteri email adresi (zorunlu)',
+})
+@IsEmail({}, { message: 'Geçerli bir email adresi giriniz' })
+email: string;
 
-    @ApiPropertyOptional({ maxLength: 40 })
-    @IsOptional()
-    @IsString()
-    @MaxLength(40)
-    phone?: string;
+
+    @ApiPropertyOptional({
+  example: '+905551112233',
+  description: 'Telefon numarası E.164 formatında',
+})
+@IsOptional()
+@Matches(/^\+?[1-9]\d{7,14}$/, {
+  message: 'Telefon numarası geçerli bir formatta değil',
+})
+phone?: string;
+
 
     @ApiPropertyOptional()
     @IsOptional()
     @IsString()
     companyName?: string;
 
-    @ApiPropertyOptional()
     @IsOptional()
-    @IsString()
-    vatNumber?: string;
+@Matches(/^\d{10}$/, {
+  message: 'Vergi numarası 10 haneli olmalıdır'
+})
+vatNumber?: string;
 
-    @ApiPropertyOptional()
-    @IsOptional()
-    @IsString()
-    website?: string;
+   
+
+@ApiPropertyOptional({
+  example: 'codyol.com.tr',
+  description: 'Geçerli bir domain (www ve http zorunlu değil)',
+})
+@IsOptional()
+@Matches(
+  /^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/,
+  {
+    message: 'Website geçerli bir domain formatında olmalıdır',
+  },
+)
+website?: string;
+
+
+
+
 
     @ApiPropertyOptional()
     @IsOptional()
