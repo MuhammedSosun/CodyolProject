@@ -26,8 +26,7 @@ export class ProposalController {
 
   @Post()
 create(@Req() req, @Body() dto: CreateProposalDto) {
-  console.log('AUTH HEADER:', req.headers.authorization);
-  console.log('USER:', req.user);
+  
   return this.service.create(dto, req.user.id);
 }
 
