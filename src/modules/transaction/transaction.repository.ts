@@ -26,13 +26,20 @@ export class TransactionRepository {
     });
   }
 
+  // 🔥 TEK VE DOĞRU findById
   findById(id: string) {
     return this.prisma.transaction.findFirst({
       where: { id, deletedAt: null },
       include: {
-        customer: { select: { id: true, fullName: true, companyName: true } },
-        proposal: { select: { id: true, title: true, status: true } },
-        createdByUser: { select: { id: true, username: true, email: true } },
+        customer: {
+          select: { id: true, fullName: true, companyName: true },
+        },
+        proposal: {
+          select: { id: true, title: true, status: true },
+        },
+        createdByUser: {
+          select: { id: true, username: true, email: true },
+        },
       },
     });
   }
@@ -72,20 +79,21 @@ export class TransactionRepository {
         skip,
         take: limit,
         include: {
-          customer: { select: { id: true, fullName: true, companyName: true } },
-          proposal: { select: { id: true, title: true, status: true } },
-          createdByUser: { select: { id: true, username: true } },
+          customer: {
+            select: { id: true, fullName: true, companyName: true },
+          },
+          proposal: {
+            select: { id: true, title: true, status: true },
+          },
+          createdByUser: {
+            select: { id: true, username: true },
+          },
         },
       }),
       this.prisma.transaction.count({ where }),
     ]);
 
-    return {
-      items,
-      page,
-      limit,
-      total,
-    };
+    return { items, page, limit, total };
   }
 
   async summary(dateFrom?: string, dateTo?: string) {
@@ -115,12 +123,11 @@ export class TransactionRepository {
 
     const incomeTotal = incomeAgg._sum.amount ?? new Prisma.Decimal(0);
     const expenseTotal = expenseAgg._sum.amount ?? new Prisma.Decimal(0);
-    const net = incomeTotal.minus(expenseTotal);
 
     return {
       incomeTotal: incomeTotal.toFixed(2),
       expenseTotal: expenseTotal.toFixed(2),
-      net: net.toFixed(2),
+      net: incomeTotal.minus(expenseTotal).toFixed(2),
       currency: 'TRY',
     };
   }

@@ -50,6 +50,11 @@ export class TransactionController {
   update(@Param('id') id: string, @Body() dto: UpdateTransactionDto) {
     return this.service.update(id, dto);
   }
+  @Get(':id')
+  @ApiOperation({ summary: 'Get transaction detail (with relations)' })
+  getById(@Param('id') id: string) {
+    return this.service.getById(id);
+  }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Soft delete transaction' })

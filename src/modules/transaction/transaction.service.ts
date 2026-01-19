@@ -74,6 +74,13 @@ export class TransactionService {
 
     return this.repo.update(id, data);
   }
+  async getById(id: string) {
+    const tx = await this.repo.findById(id);
+    if (!tx) {
+      throw new NotFoundException('Transaction not found');
+    }
+    return tx;
+  }
 
   async remove(id: string) {
     const exists = await this.repo.findById(id);
