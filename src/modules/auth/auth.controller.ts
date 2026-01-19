@@ -40,6 +40,13 @@ export class AuthController {
     return this.authService.logout(req.user.id);
   }
 
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  me(@Req() req) {
+    return this.authService.me(req.user.id);
+  }
+
   @Get('admin')
   @Roles(Role.ADMIN)
   adminOnly() {
