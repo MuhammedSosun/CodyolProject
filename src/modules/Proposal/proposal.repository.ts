@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProposalDto } from './dto/create-proposal.dto';
 import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { ProposalListQueryDto } from './dto/proposal-list-query.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProposalRepository {
@@ -15,7 +16,7 @@ export class ProposalRepository {
         customerId: dto.customerId,
         validUntil: new Date(dto.validUntil),
         status: dto.status,
-        totalAmount: dto.totalAmount,
+        totalAmount: new Prisma.Decimal(dto.totalAmount),
         createdByUserId: userId,
       },
     });

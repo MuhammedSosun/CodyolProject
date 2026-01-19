@@ -17,40 +17,52 @@ export class CreateProposalDto {
     example: 'Web Sitesi Geliştirme Teklifi',
     description: 'Teklif başlığı',
     maxLength: 150,
+    required: true,
   })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(150)
+  @IsString({ message: 'Teklif başlığı metin olmalıdır.' })
+  @IsNotEmpty({ message: 'Teklif başlığı zorunludur.' })
+  @MaxLength(150, {
+    message: 'Teklif başlığı en fazla 150 karakter olabilir.',
+  })
   title: string;
 
   @ApiProperty({
-    example: 'customer-uuid',
-    description: 'Teklifin ait olduğu müşteri ID',
-  })
-  @IsUUID()
-  customerId: string;
+  example: 'c1a2b3c4-1234-4567-890a-bcdef1234567',
+  description: 'Teklifin ait olduğu müşteri ID',
+})
+@IsUUID('4', { message: 'Geçerli bir müşteri ID girilmelidir.' })
+@IsNotEmpty({ message: 'Müşteri seçilmelidir.' })
+customerId: string;
+
 
   @ApiProperty({
     example: '2025-03-01T23:59:59Z',
     description: 'Teklifin geçerlilik tarihi',
+    required: true,
   })
-  @IsDateString()
+  @IsDateString({}, { message: 'Geçerli bir tarih girilmelidir.' })
+  @IsNotEmpty({ message: 'Geçerlilik tarihi zorunludur.' })
   validUntil: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     enum: ProposalStatus,
     example: ProposalStatus.DRAFT,
-    description: 'Teklif durumu (boş bırakılırsa DRAFT)',
+    description: 'Teklif durumu',
   })
-  @IsOptional()
-  @IsEnum(ProposalStatus)
-  status?: ProposalStatus;
+  @IsEnum(ProposalStatus, {
+    message: 'Geçerli bir teklif durumu seçilmelidir.',
+  })
+  status: ProposalStatus;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
   example: '150000.00',
   description: 'Teklif toplam tutarı',
+  required: true,
 })
-@IsOptional()
-@IsNumberString()
-totalAmount?: string;
+@IsNotEmpty({ message: 'Teklif toplam tutarı zorunludur.' })
+@IsNumberString({}, { message: 'Teklif toplam tutarı sayı olmalıdır.' })
+totalAmount: string;
+
+
+
 }

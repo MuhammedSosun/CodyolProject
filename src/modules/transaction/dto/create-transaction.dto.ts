@@ -26,28 +26,44 @@ export class CreateTransactionDto {
   @IsString()
   currency?: string;
 
-  @ApiPropertyOptional({ example: '2026-01-10T00:00:00.000Z' })
-  @IsOptional()
-  @IsDateString()
-  date?: string;
+  @ApiProperty({
+  example: '2026-01-10T00:00:00.000Z',
+  description: 'İşlem tarihi',
+})
+@IsDateString({}, { message: 'Geçerli bir tarih girilmelidir.' })
+@IsNotEmpty({ message: 'Tarih zorunludur.' })
+date: string;
 
-  @ApiPropertyOptional({ example: 'Web sitesi ödeme' })
-  @IsOptional()
-  @IsString()
-  description?: string;
 
-  @ApiPropertyOptional({ example: 'Satış' })
-  @IsOptional()
-  @IsString()
-  category?: string;
+  @ApiProperty({
+  example: 'Web sitesi ödeme',
+  description: 'Açıklama',
+})
+@IsString()
+@IsNotEmpty({ message: 'Açıklama zorunludur.' })
+description: string;
 
-  @ApiPropertyOptional({
-    enum: PaymentMethod,
-    example: PaymentMethod.BANK_TRANSFER,
-  })
-  @IsOptional()
-  @IsEnum(PaymentMethod)
-  paymentMethod?: PaymentMethod;
+
+  @ApiProperty({
+  example: 'Satış',
+  description: 'İşlem kategorisi',
+})
+@IsString()
+@IsNotEmpty({ message: 'Kategori zorunludur.' })
+category: string;
+
+
+  @ApiProperty({
+  enum: PaymentMethod,
+  example: PaymentMethod.BANK_TRANSFER,
+  description: 'Ödeme yöntemi',
+})
+@IsEnum(PaymentMethod, {
+  message: 'Geçerli bir ödeme yöntemi seçilmelidir.',
+})
+@IsNotEmpty({ message: 'Ödeme yöntemi zorunludur.' })
+paymentMethod: PaymentMethod;
+
 
   @ApiPropertyOptional({ example: 'DEKONT-123' })
   @IsOptional()
