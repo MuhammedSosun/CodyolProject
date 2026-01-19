@@ -7,7 +7,6 @@ import {
   IsUUID,
   IsDateString,
   MaxLength,
-  IsDecimal,
   IsNumberString,
 } from 'class-validator';
 import { ProposalStatus } from '@prisma/client';
@@ -46,11 +45,20 @@ export class CreateProposalDto {
   @IsEnum(ProposalStatus)
   status?: ProposalStatus;
 
+  // ➕ Mevcut yapıya uygun şekilde content (not) alanı eklendi
   @ApiPropertyOptional({
-  example: '150000.00',
-  description: 'Teklif toplam tutarı',
-})
-@IsOptional()
-@IsNumberString()
-totalAmount?: string;
+    example: 'Teklif detayları ve notlar buraya gelecek.',
+    description: 'Teklif tanımı veya not içeriği',
+  })
+  @IsOptional()
+  @IsString()
+  content?: string;
+
+  @ApiPropertyOptional({
+    example: '150000.00',
+    description: 'Teklif toplam tutarı',
+  })
+  @IsOptional()
+  @IsNumberString()
+  totalAmount?: string;
 }

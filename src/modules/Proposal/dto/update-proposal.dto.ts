@@ -19,6 +19,12 @@ export class UpdateProposalDto {
     @MaxLength(150)
     title?: string;
 
+    // ➕ Müşteri değişimi için eklendi
+    @ApiPropertyOptional({ example: 'customer-uuid' })
+    @IsOptional()
+    @IsString()
+    customerId?: string; 
+
     @ApiPropertyOptional({
         example: '2025-04-01T23:59:59Z',
         description: 'Yeni geçerlilik tarihi',
@@ -36,12 +42,17 @@ export class UpdateProposalDto {
     @IsEnum(ProposalStatus)
     status?: ProposalStatus;
 
-     @ApiPropertyOptional({
-        example: '175000.50',
+    // ➕ Tanım (Not) içeriği için eklendi
+    @ApiPropertyOptional({ example: '<h1>Teklif Detayı</h1>' })
+    @IsOptional()
+    @IsString()
+    content?: string; 
+
+    @ApiPropertyOptional({
+        example: 175000.50,
         description: 'Teklif toplam tutarı',
     })
     @IsOptional()
     @IsNumber()
     totalAmount?: number;
-
 }

@@ -4,7 +4,6 @@ import { CreateProposalDto } from './dto/create-proposal.dto';
 import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { ProposalListQueryDto } from './dto/proposal-list-query.dto';
 
-
 @Injectable()
 export class ProposalService {
   constructor(private readonly repo: ProposalRepository) {}
@@ -43,8 +42,10 @@ export class ProposalService {
         currency: p.currency,
         status: p.status,
         createdAt: p.createdAt,
-        customerName: p.customer?.fullName,
-        customerEmail: p.customer?.email,
+        content: p.content, // ➕ Frontend not içeriği için eklendi
+        // ➕ İlişkili Müşteri tablosundan güncel ismi alıyoruz
+        customerName: p.customer?.fullName || 'Bilinmeyen Müşteri', 
+        customerEmail: p.customer?.email || '',
       })),
     };
   }

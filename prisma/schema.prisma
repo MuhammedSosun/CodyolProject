@@ -185,6 +185,9 @@ model Proposal {
   status     ProposalStatus @default(DRAFT)
   validUntil DateTime
 
+  // 🔹 Yeni eklenen alan (Notlar ve Tanım için)
+  content    String?        @db.Text
+
   totalAmount Decimal? @db.Decimal(12, 2)
   currency    String   @default("TRY")
 

@@ -4,7 +4,6 @@ import { CreateProposalDto } from './dto/create-proposal.dto';
 import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { ProposalListQueryDto } from './dto/proposal-list-query.dto';
 
-
 @Injectable()
 export class ProposalRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -17,6 +16,8 @@ export class ProposalRepository {
         validUntil: new Date(dto.validUntil),
         status: dto.status,
         totalAmount: dto.totalAmount, 
+        // ➕ Yeni: Not içeriğini veritabanına kaydeder
+        content: dto.content, 
         createdByUserId: userId,
       },
     });
@@ -39,17 +40,24 @@ export class ProposalRepository {
         createdByUserId: userId,
         deletedAt: null,
       },
+      include: {
+        customer: true // Detay sayfasında müşteri bilgilerinin gelmesi için
+      }
     });
   }
 
   update(id: string, userId: string, dto: UpdateProposalDto) {
-    return this.prisma.proposal.updateMany({
-      where: {
+    // 💡 updateMany yerine update kullanımı Prisma'nın DTO'daki 'content' ve 'customerId' 
+    // gibi yeni alanları doğru işlemesini sağlar.
+    return this.prisma.proposal.update({
+      where: { 
         id,
-        createdByUserId: userId,
-        deletedAt: null,
       },
-      data: dto,
+      data: {
+        ...dto,
+        // Tarih formatı string gelirse Date nesnesine çeviriyoruz
+        validUntil: dto.validUntil ? new Date(dto.validUntil) : undefined,
+      },
     });
   }
 
