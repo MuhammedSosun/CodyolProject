@@ -12,6 +12,7 @@ import { TeamsModule } from './modules/team/teams.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     ProfileModule,
     TeamsModule,
     TransactionModule,
+    UserModule,
   ],
   providers: [
     {

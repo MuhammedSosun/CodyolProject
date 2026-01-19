@@ -10,11 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -29,7 +25,7 @@ export class TaskController {
 
   @Post()
   create(@Req() req, @Body() dto: CreateTaskDto) {
-    return this.service.create(dto, req.user.id);
+    return this.service.create(dto, req.user.id); // req.user.id = creator (admin)
   }
 
   @Get()

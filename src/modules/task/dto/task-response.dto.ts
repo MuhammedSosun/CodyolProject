@@ -5,10 +5,12 @@ export class TaskResponseDto {
   @ApiProperty()
   id: string;
 
-
   // 🔹 YENİ (Task her zaman bir kullanıcıya atanır)
   @ApiProperty()
   assignedUserId: string;
+
+  @ApiProperty()
+  createdByUserId: string;
 
   @ApiProperty({ required: false })
   customerId?: string | null;

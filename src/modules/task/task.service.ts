@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { TaskRepository } from './task.repository';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -19,7 +16,9 @@ export class TaskService {
   ) {}
 
   // ✅ TASK CREATE
-  async create(dto: CreateTaskDto, assignedUserId: string) {
+  // task.service.ts
+  async create(dto: CreateTaskDto, creatorUserId: string) {
+    // 1) customer kontrolü
     if (dto.customerId) {
       const customer = await this.prisma.customer.findFirst({
         where: { id: dto.customerId, deletedAt: null },
@@ -27,17 +26,31 @@ export class TaskService {
       if (!customer) throw new NotFoundException('Customer not found');
     }
 
+    // 2) assignee user kontrolü (Ahmed var mı?)
+    const assignee = await this.prisma.user.findFirst({
+      where: { id: dto.assignedUserId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!assignee) throw new NotFoundException('Assigned user not found');
+
+    // 3) task oluştur
     const task = await this.repo.create({
       title: dto.title,
       description: dto.description,
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
       status: (dto.status ?? 'NEW') as PrismaTaskStatus,
-      assignedUserId,
+
+      // ✅ Ahmed
+      assignedUserId: dto.assignedUserId,
+
+      // ✅ Admin
+      createdByUserId: creatorUserId,
+
       customerId: dto.customerId ?? null,
     });
 
-    // 🔥 OTOMATİK ACTIVITY (TASK CREATED)
+    // 4) activity: log'u creator olarak yazmak daha doğru (admin yaptı)
     if (task.customerId) {
       await this.activityService.create(
         {
@@ -46,7 +59,7 @@ export class TaskService {
           type: ActivityType.TASK_CREATED,
           title: `Görev oluşturuldu: ${task.title}`,
         },
-        assignedUserId
+        creatorUserId,
       );
     }
 
@@ -56,9 +69,14 @@ export class TaskService {
   // ✅ TASK DETAIL
   async findOne(id: string, userId: string) {
     const task = await this.repo.findById(id);
-    if (!task || task.assignedUserId !== userId) {
+
+    if (
+      !task ||
+      (task.assignedUserId !== userId && task.createdByUserId !== userId)
+    ) {
       throw new NotFoundException('Task not found');
     }
+
     return this.toResponse(task);
   }
 
@@ -68,7 +86,7 @@ export class TaskService {
     const limit = Number(query.limit ?? 10);
 
     const where: Prisma.TaskWhereInput = {
-      assignedUserId: userId,
+      OR: [{ assignedUserId: userId }, { createdByUserId: userId }],
     };
 
     if (query.customerId) where.customerId = query.customerId;
@@ -81,11 +99,13 @@ export class TaskService {
       data: items.map((t) => this.toResponse(t)),
     };
   }
-
   // ✅ TASK UPDATE
   async update(id: string, userId: string, dto: UpdateTaskDto) {
     const current = await this.repo.findById(id);
-    if (!current || current.assignedUserId !== userId) {
+    if (
+      !current ||
+      (current.assignedUserId !== userId && current.createdByUserId !== userId)
+    ) {
       throw new NotFoundException('Task not found');
     }
 
@@ -97,8 +117,7 @@ export class TaskService {
       data.startDate = dto.startDate ? new Date(dto.startDate) : null;
     if (dto.endDate !== undefined)
       data.endDate = dto.endDate ? new Date(dto.endDate) : null;
-    if (dto.status !== undefined)
-      data.status = dto.status as PrismaTaskStatus;
+    if (dto.status !== undefined) data.status = dto.status as PrismaTaskStatus;
 
     if (dto.customerId !== undefined) {
       data.customer = dto.customerId
@@ -122,7 +141,7 @@ export class TaskService {
           type: ActivityType.TASK_STATUS_CHANGED,
           title: `Görev durumu güncellendi: ${updated.title}`,
         },
-        userId
+        userId,
       );
     }
 
@@ -132,7 +151,12 @@ export class TaskService {
   // ✅ TASK DELETE (soft)
   async delete(id: string, userId: string) {
     const result = await this.prisma.task.updateMany({
-      where: { id, assignedUserId: userId, deletedAt: null },
+      where: {
+        id,
+        deletedAt: null,
+        OR: [{ assignedUserId: userId }, { createdByUserId: userId }],
+      },
+
       data: { deletedAt: new Date() },
     });
 
@@ -151,8 +175,19 @@ export class TaskService {
       endDate: t.endDate,
       customerId: t.customerId,
       assignedUserId: t.assignedUserId,
+      createdByUserId: t.createdByUserId,
       createdAt: t.createdAt,
       updatedAt: t.updatedAt,
+
+      // ✅ EKLE: customer objesi (UUID yerine isim göstermek için)
+      customer: t.customer
+        ? {
+            id: t.customer.id,
+            fullName: t.customer.fullName ?? t.customer.name ?? null,
+            email: t.customer.email ?? null,
+            phone: t.customer.phone ?? null,
+          }
+        : null,
     };
   }
 }

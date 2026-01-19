@@ -1,3 +1,4 @@
+// create-task.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEnum,
@@ -11,6 +12,14 @@ import {
 import { TaskStatus } from '../enums/task-status.enum';
 
 export class CreateTaskDto {
+  // ✅ Admin kimi seçecekse o
+  @ApiProperty({
+    example: 'user-uuid',
+    description: 'Görevin atanacağı kullanıcı',
+  })
+  @IsUUID()
+  assignedUserId: string;
+
   @ApiPropertyOptional({ example: 'customer-uuid' })
   @IsOptional()
   @IsUUID()
