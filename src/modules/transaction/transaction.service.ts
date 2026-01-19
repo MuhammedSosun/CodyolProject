@@ -8,12 +8,34 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionListQueryDto } from './dto/transaction-list-query.dto';
 import { Prisma } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TransactionService {
-  constructor(private readonly repo: TransactionRepository) {}
+  constructor(
+    private readonly repo: TransactionRepository,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async create(dto: CreateTransactionDto, user: any) {
+    // ✅ 1) Proposal varsa: proposal'ı çek, customerId'yi bul
+    let resolvedCustomerId = dto.customerId ?? null;
+
+    if (dto.proposalId) {
+      const proposal = await this.prisma.proposal.findFirst({
+        where: { id: dto.proposalId, deletedAt: null },
+        select: { id: true, customerId: true },
+      });
+
+      if (!proposal) throw new NotFoundException('Proposal not found');
+      if (!proposal.customerId)
+        throw new BadRequestException('Proposal has no customer');
+
+      // proposal her zaman kazanır
+      resolvedCustomerId = proposal.customerId;
+    }
+
+    // ✅ 2) Create payload
     const data: Prisma.TransactionCreateInput = {
       type: dto.type as any,
       amount: new Prisma.Decimal(dto.amount),
@@ -26,16 +48,15 @@ export class TransactionService {
 
       createdByUser: { connect: { id: user.id } },
 
-      ...(dto.customerId
-        ? { customer: { connect: { id: dto.customerId } } }
+      ...(resolvedCustomerId
+        ? { customer: { connect: { id: resolvedCustomerId } } }
         : {}),
+
       ...(dto.proposalId
         ? { proposal: { connect: { id: dto.proposalId } } }
         : {}),
     };
 
-    // Basit güvenlik: müşteri ve teklif aynı anda verildiyse (opsiyonel)
-    // İstersen buna izin ver; CRM’de bazen mantıklı.
     return this.repo.create(data);
   }
 
