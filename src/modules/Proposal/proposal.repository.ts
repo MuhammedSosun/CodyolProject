@@ -4,7 +4,6 @@ import { CreateProposalDto } from './dto/create-proposal.dto';
 import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { ProposalListQueryDto } from './dto/proposal-list-query.dto';
 
-
 @Injectable()
 export class ProposalRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -16,7 +15,7 @@ export class ProposalRepository {
         customerId: dto.customerId,
         validUntil: new Date(dto.validUntil),
         status: dto.status,
-        totalAmount: dto.totalAmount, 
+        totalAmount: dto.totalAmount,
         createdByUserId: userId,
       },
     });
@@ -24,44 +23,63 @@ export class ProposalRepository {
 
   findAll(userId: string) {
     return this.prisma.proposal.findMany({
-      where: {
-        createdByUserId: userId,
-        deletedAt: null,
-      },
+      where: { createdByUserId: userId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   findById(id: string, userId: string) {
     return this.prisma.proposal.findFirst({
-      where: {
-        id,
-        createdByUserId: userId,
-        deletedAt: null,
+      where: { id, createdByUserId: userId, deletedAt: null },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            companyName: true,
+            phone: true,
+          },
+        },
       },
     });
   }
 
-  update(id: string, userId: string, dto: UpdateProposalDto) {
-    return this.prisma.proposal.updateMany({
-      where: {
-        id,
-        createdByUserId: userId,
-        deletedAt: null,
-      },
+  async updateSafe(id: string, userId: string, dto: UpdateProposalDto) {
+    const current = await this.prisma.proposal.findFirst({
+      where: { id, createdByUserId: userId, deletedAt: null },
+    });
+    if (!current) return null;
+
+    return this.prisma.proposal.update({
+      where: { id },
       data: dto,
+      include: {
+        customer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            companyName: true,
+            phone: true,
+          },
+        },
+      },
     });
   }
 
-  softDelete(id: string, userId: string) {
-    return this.prisma.proposal.updateMany({
-      where: {
-        id,
-        createdByUserId: userId,
-        deletedAt: null,
-      },
+  async softDeleteSafe(id: string, userId: string) {
+    const current = await this.prisma.proposal.findFirst({
+      where: { id, createdByUserId: userId, deletedAt: null },
+    });
+    if (!current) return null;
+
+    await this.prisma.proposal.update({
+      where: { id },
       data: { deletedAt: new Date() },
     });
+
+    return true;
   }
 
   async findForList(userId: string, query: ProposalListQueryDto) {
@@ -74,21 +92,13 @@ export class ProposalRepository {
       search,
     } = query;
 
-    const where: any = {
-      createdByUserId: userId,
-      deletedAt: null,
-    };
-
+    const where: any = { createdByUserId: userId, deletedAt: null };
     if (status) where.status = status;
 
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
-        {
-          customer: {
-            fullName: { contains: search, mode: 'insensitive' },
-          },
-        },
+        { customer: { fullName: { contains: search, mode: 'insensitive' } } },
       ];
     }
 
@@ -96,9 +106,7 @@ export class ProposalRepository {
       this.prisma.proposal.findMany({
         where,
         include: {
-          customer: {
-            select: { fullName: true, email: true },
-          },
+          customer: { select: { fullName: true, email: true } },
         },
         orderBy: { [sortBy]: order },
         skip: (page - 1) * limit,

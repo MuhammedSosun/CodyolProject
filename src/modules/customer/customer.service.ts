@@ -65,21 +65,16 @@ export class CustomerService {
   }
 
   async findOne(id: string, user: any) {
-  const customer = await this.repo.findById(id);
+    const customer = await this.repo.findById(id);
 
-  if (!customer) {
-    throw new NotFoundException('Customer not found');
+    if (!customer) throw new NotFoundException('Customer not found');
+
+    if (customer.ownerUserId !== user.id) {
+      throw new UnauthorizedException('Bu müşteriye erişemezsin');
+    }
+
+    return this.toDetailResponse(customer);
   }
-
-  // ŞİMDİLİK SADECE ADMIN VAR AMA...
-  if (customer.ownerUserId !== user.id) {
-  throw new UnauthorizedException('Bu müşteriye erişemezsin');
-}
-
-
-  return this.toResponse(customer);
-}
-
 
   async list(query: CustomerListQueryDto) {
     const page = query.page ?? 1;
@@ -107,6 +102,23 @@ export class CustomerService {
       email: c.email,
       phone: c.phone,
       companyName: c.companyName,
+      status: c.status,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    };
+  }
+  private toDetailResponse(c: any) {
+    return {
+      id: c.id,
+      fullName: c.fullName,
+      email: c.email,
+      phone: c.phone,
+      companyName: c.companyName,
+      vatNumber: c.vatNumber,
+      website: c.website,
+      address: c.address,
+      description: c.description,
+      designation: c.designation,
       status: c.status,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,

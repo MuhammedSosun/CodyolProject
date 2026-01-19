@@ -44,11 +44,7 @@ export class ActivityController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update activity' })
-  update(
-    @Req() req,
-    @Param('id') id: string,
-    @Body() dto: UpdateActivityDto,
-  ) {
+  update(@Req() req, @Param('id') id: string, @Body() dto: UpdateActivityDto) {
     return this.service.update(id, req.user.id, dto);
   }
 

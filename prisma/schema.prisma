@@ -26,6 +26,8 @@
   profile Profile?
   refreshTokens RefreshToken[]
     teamMemberships TeamMember[]
+      transactions Transaction[] @relation("UserTransactions")
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -70,6 +72,8 @@
   activities Activity[]
   tasks      Task[]
   proposals  Proposal[]
+    transactions Transaction[]
+
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -187,6 +191,8 @@ model Proposal {
 
   totalAmount Decimal? @db.Decimal(12, 2)
   currency    String   @default("TRY")
+    transactions Transaction[]
+
 
   createdByUserId String
   createdAt DateTime @default(now())
@@ -252,5 +258,55 @@ model TeamMember {
   @@unique([teamId, userId]) // aynı user aynı team'e 2 kere eklenmesin
   @@index([teamId])
   @@index([userId])
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  OTHER
+}
+
+model Transaction {
+  id String @id @default(uuid())
+
+  type TransactionType
+  amount Decimal @db.Decimal(12, 2)
+  currency String @default("TRY")
+
+  date DateTime @default(now())
+
+  description String?
+  category String? // MVP: string kategori, şişirmiyoruz
+
+  paymentMethod PaymentMethod @default(BANK_TRANSFER)
+  referenceNo String? // fiş / dekont no (opsiyonel)
+
+  // Optional ilişkilendirme
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  proposalId String?
+  proposal   Proposal? @relation(fields: [proposalId], references: [id], onDelete: SetNull)
+
+  // Kim ekledi?
+  createdByUserId String
+  createdByUser   User @relation("UserTransactions", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([type])
+  @@index([date])
+  @@index([customerId])
+  @@index([proposalId])
+  @@index([createdByUserId])
+  @@index([deletedAt])
 }
 

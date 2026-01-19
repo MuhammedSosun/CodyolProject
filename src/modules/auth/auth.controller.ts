@@ -11,7 +11,6 @@ import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
 import { Role } from '@prisma/client';
 
-
 @ApiTags('Auth')
 @Controller('api/auth')
 export class AuthController {
@@ -29,7 +28,7 @@ export class AuthController {
     return this.authService.authenticate(dto);
   }
 
-  // ⚠️ Refresh token ACCESS TOKEN değildir
+  @Public()
   @UseGuards(RefreshAuthGuard)
   @Post('refreshToken')
   refresh(@Body() dto: RefreshTokenDto) {

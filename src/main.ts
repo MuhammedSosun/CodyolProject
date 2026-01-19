@@ -2,9 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
-import { RolesGuard } from './modules/auth/guards/roles.guard';
 import 'dotenv/config';
 
 async function bootstrap() {
@@ -15,9 +12,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // ✅ SERIF'TEN GELEN REQUEST LOGGER – BİLİNÇLİ OLARAK KALIYOR
+  // ✅ Request logger
   app.use((req, res, next) => {
     console.log('➡️ INCOMING:', req.method, req.url);
+    console.log('   auth:', req.headers.authorization);
     next();
   });
 
@@ -26,14 +24,6 @@ async function bootstrap() {
       transform: true,
       whitelist: true,
     }),
-  );
-
-  const reflector = app.get(Reflector);
-
-  // 🔐 GLOBAL GÜVENLİK
-  app.useGlobalGuards(
-    new JwtAuthGuard(reflector),
-    new RolesGuard(reflector),
   );
 
   const config = new DocumentBuilder()
@@ -52,7 +42,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(3050);
 }

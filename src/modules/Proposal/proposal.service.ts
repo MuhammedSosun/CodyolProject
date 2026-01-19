@@ -4,7 +4,6 @@ import { CreateProposalDto } from './dto/create-proposal.dto';
 import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { ProposalListQueryDto } from './dto/proposal-list-query.dto';
 
-
 @Injectable()
 export class ProposalService {
   constructor(private readonly repo: ProposalRepository) {}
@@ -23,12 +22,16 @@ export class ProposalService {
     return proposal;
   }
 
-  update(id: string, dto: UpdateProposalDto, userId: string) {
-    return this.repo.update(id, userId, dto);
+  async update(id: string, userId: string, dto: UpdateProposalDto) {
+    const updated = await this.repo.updateSafe(id, userId, dto);
+    if (!updated) throw new NotFoundException('Teklif bulunamadı');
+    return updated;
   }
 
-  delete(id: string, userId: string) {
-    return this.repo.softDelete(id, userId);
+  async delete(id: string, userId: string) {
+    const ok = await this.repo.softDeleteSafe(id, userId);
+    if (!ok) throw new NotFoundException('Teklif bulunamadı');
+    return { ok: true };
   }
 
   async list(userId: string, query: ProposalListQueryDto) {

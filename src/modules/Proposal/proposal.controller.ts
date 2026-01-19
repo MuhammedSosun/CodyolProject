@@ -1,22 +1,19 @@
 import {
-    Controller,
-    Post,
-    Get,
-    Patch,
-    Delete,
-    Body,
-    Param,
-    Req,
-    UseGuards,
-    Query,
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Req,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ProposalService } from './proposal.service';
 import { CreateProposalDto } from './dto/create-proposal.dto';
 import { UpdateProposalDto } from './dto/update-proposal.dto';
 import { ProposalListQueryDto } from './dto/proposal-list-query.dto';
-
-
 
 @ApiTags('Proposals')
 @ApiBearerAuth('JWT-auth')
@@ -25,11 +22,9 @@ export class ProposalController {
   constructor(private readonly service: ProposalService) {}
 
   @Post()
-create(@Req() req, @Body() dto: CreateProposalDto) {
-  
-  return this.service.create(dto, req.user.id);
-}
-
+  create(@Req() req, @Body() dto: CreateProposalDto) {
+    return this.service.create(dto, req.user.id);
+  }
 
   @Get('list')
   list(@Req() req, @Query() query: ProposalListQueryDto) {
@@ -48,7 +43,7 @@ create(@Req() req, @Body() dto: CreateProposalDto) {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateProposalDto, @Req() req) {
-    return this.service.update(id, dto, req.user.id);
+    return this.service.update(id, req.user.id, dto);
   }
 
   @Delete(':id')
