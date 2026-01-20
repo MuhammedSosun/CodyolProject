@@ -16,7 +16,10 @@ export class CreateTransactionDto {
   type: TransactionType;
 
   // Prisma Decimal için en güvenlisi string
-  @ApiProperty({ example: '12500.00', description: 'Decimal string' })
+  @ApiProperty({
+    example: '12500.00',
+    description: 'Decimal string',
+  })
   @IsNotEmpty()
   @IsNumberString()
   amount: string;
@@ -26,7 +29,9 @@ export class CreateTransactionDto {
   @IsString()
   currency?: string;
 
-  @ApiPropertyOptional({ example: '2026-01-10T00:00:00.000Z' })
+  @ApiPropertyOptional({
+    example: '2026-01-10T00:00:00.000Z',
+  })
   @IsOptional()
   @IsDateString()
   date?: string;

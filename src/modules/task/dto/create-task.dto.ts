@@ -1,4 +1,3 @@
-// create-task.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEnum,
@@ -31,13 +30,18 @@ export class CreateTaskDto {
   @MaxLength(160)
   title: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    example: 'Teklif hazırlık süreci açıklaması',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(1000)
   description?: string;
 
-  @ApiPropertyOptional({ enum: TaskStatus })
+  @ApiPropertyOptional({
+    enum: TaskStatus,
+    example: TaskStatus.NEW,
+  })
   @IsOptional()
   @IsEnum(TaskStatus)
   status?: TaskStatus;
