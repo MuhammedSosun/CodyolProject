@@ -309,3 +309,21 @@ model Transaction {
   @@index([createdByUserId])
   @@index([deletedAt])
 }
+
+
+//Teams için leaves
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Leave {
+  id        Int      @id @default(autoincrement())
+  employee  String
+  start     DateTime
+  end       DateTime
+  type      String?
+  status    LeaveStatus
+  createdAt DateTime @default(now())
+}

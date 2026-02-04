@@ -3,8 +3,7 @@ import { TaskRepository } from './task.repository';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { TaskStatus as PrismaTaskStatus, ActivityType } from '@prisma/client';
-import { Prisma } from '@prisma/client';
+import { ActivityType, Prisma } from '@prisma/client';
 import { ActivityService } from '../activity/activity.service';
 
 @Injectable()
@@ -16,7 +15,6 @@ export class TaskService {
   ) {}
 
   // ✅ TASK CREATE
-  // task.service.ts
   async create(dto: CreateTaskDto, creatorUserId: string) {
     // 1) customer kontrolü
     if (dto.customerId) {
@@ -26,7 +24,7 @@ export class TaskService {
       if (!customer) throw new NotFoundException('Customer not found');
     }
 
-    // 2) assignee user kontrolü (Ahmed var mı?)
+    // 2) assignee user kontrolü
     const assignee = await this.prisma.user.findFirst({
       where: { id: dto.assignedUserId, deletedAt: null },
       select: { id: true },
@@ -39,18 +37,16 @@ export class TaskService {
       description: dto.description,
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
-      status: (dto.status ?? 'NEW') as PrismaTaskStatus,
 
-      // ✅ Ahmed
+      // ✅ DEFAULT STATUS
+      status: dto.status ?? 'NEW',
+
       assignedUserId: dto.assignedUserId,
-
-      // ✅ Admin
       createdByUserId: creatorUserId,
-
       customerId: dto.customerId ?? null,
     });
 
-    // 4) activity: log'u creator olarak yazmak daha doğru (admin yaptı)
+    // 4) activity log
     if (task.customerId) {
       await this.activityService.create(
         {
@@ -99,6 +95,7 @@ export class TaskService {
       data: items.map((t) => this.toResponse(t)),
     };
   }
+
   // ✅ TASK UPDATE
   async update(id: string, userId: string, dto: UpdateTaskDto) {
     const current = await this.repo.findById(id);
@@ -117,7 +114,11 @@ export class TaskService {
       data.startDate = dto.startDate ? new Date(dto.startDate) : null;
     if (dto.endDate !== undefined)
       data.endDate = dto.endDate ? new Date(dto.endDate) : null;
-    if (dto.status !== undefined) data.status = dto.status as PrismaTaskStatus;
+
+    // ✅ STATUS UPDATE (TYPE SAFE)
+    if (dto.status !== undefined) {
+      data.status = dto.status;
+    }
 
     if (dto.customerId !== undefined) {
       data.customer = dto.customerId
@@ -156,7 +157,6 @@ export class TaskService {
         deletedAt: null,
         OR: [{ assignedUserId: userId }, { createdByUserId: userId }],
       },
-
       data: { deletedAt: new Date() },
     });
 
@@ -178,8 +178,6 @@ export class TaskService {
       createdByUserId: t.createdByUserId,
       createdAt: t.createdAt,
       updatedAt: t.updatedAt,
-
-      // ✅ EKLE: customer objesi (UUID yerine isim göstermek için)
       customer: t.customer
         ? {
             id: t.customer.id,

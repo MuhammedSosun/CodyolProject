@@ -10,6 +10,8 @@ import { ProposalModule } from './modules/Proposal/proposal.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { TeamsModule } from './modules/team/teams.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { LeavesModule } from './modules/team/leaves/leaves.module';
+
 
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { UserModule } from './modules/user/user.module';
@@ -24,6 +26,7 @@ import { UserModule } from './modules/user/user.module';
     ProposalModule,
     ProfileModule,
     TeamsModule,
+    LeavesModule, 
     TransactionModule,
     UserModule,
   ],

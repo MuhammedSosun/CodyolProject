@@ -45,6 +45,7 @@ export class TaskController {
 
   @Delete(':id')
   delete(@Req() req, @Param('id') id: string) {
+    
     return this.service.delete(id, req.user.id);
   }
 }
