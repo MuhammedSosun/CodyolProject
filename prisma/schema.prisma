@@ -326,4 +326,6 @@ model Leave {
   type      String?
   status    LeaveStatus
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
 }

@@ -20,8 +20,14 @@ export class LeavesService {
         createdAt: true,
       
       },
-    });
+    });   
   }
+findByUser(username: string) {
+  return this.prisma.leave.findMany({
+    where: { employee: username },
+    orderBy: { createdAt: 'desc' },
+  });
+}
 
   // 🟢 Onaylanan izinler
   findApproved() {
@@ -53,5 +59,26 @@ export class LeavesService {
       where: { id },
       data: { status: LeaveStatus.REJECTED },
     });
-  }
+  }  
+  
+  
+  // ➕ İzin oluştur (User tarafı)
+create(data: {
+  type: string;
+  start: string;
+  end: string;
+  note?: string;
+  employee: string;
+}) {
+  return this.prisma.leave.create({
+    data: {
+      employee: data.employee,
+      type: data.type ?? 'İzin',
+      start: new Date(data.start),
+      end: new Date(data.end),
+      status: LeaveStatus.PENDING,
+    },
+  });
+}
+
 }

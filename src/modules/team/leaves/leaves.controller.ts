@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Patch, Param,Body, Post,Req } from '@nestjs/common';
 import { LeavesService } from './leaves.service';
 import { mapLeaveToPendingUI } from './leaves.mapper';
 import { mapLeaveToCalendar } from './leaves.mapper';
@@ -8,6 +8,22 @@ import { mapLeaveToCalendar } from './leaves.mapper';
 
 export class LeavesController {
   constructor(private readonly leavesService: LeavesService) {}
+
+//Userın izin oluştrurması
+@Post()
+create(@Req() req, @Body() data) {
+  return this.leavesService.create({
+    ...data,
+    employee: req.user.username, // 🔥 ASIL OLAY
+  });
+}
+
+  // userın kendi izinleri
+  @Get('my')
+  getMyLeaves(@Req() req) {
+    const username = req.user.username;
+    return this.leavesService.findByUser(username);
+  }
 
   // GET /teams/leaves/pending
  @Get('pending')
