@@ -11,6 +11,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { TeamsModule } from './modules/team/teams.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { LeavesModule } from './modules/team/leaves/leaves.module';
+import { PayrollModule } from './modules/team/payroll/payroll.module';
 
 
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -27,6 +28,7 @@ import { UserModule } from './modules/user/user.module';
     ProfileModule,
     TeamsModule,
     LeavesModule, 
+    PayrollModule,
     TransactionModule,
     UserModule,
   ],
