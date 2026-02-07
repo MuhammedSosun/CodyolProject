@@ -3,7 +3,7 @@ import {
   Get,
   Patch,
   Param,
-  Req,
+  Req,Body, Post ,
 } from '@nestjs/common';
 import { PayrollService } from './payroll.service';
 import {
@@ -11,22 +11,27 @@ import {
   mapPayrollToUserUI,
 } from './payroll.mapper';
 
-@Controller('api/teams/payroll')
+
+@Controller('api/teams/payroll') 
 export class PayrollController {
   constructor(private readonly payrollService: PayrollService) {}
 
   // 🟢 USER → kendi bordroları
-  @Get('my')
-  async getMyPayrolls(@Req() req) {
-    const payrolls = await this.payrollService.findByUser(req.user.id);
-    return payrolls.map(mapPayrollToUserUI);
-  }
+@Get('my')
+async getMyPayrolls(@Req() req) {
+  const payrolls = await this.payrollService.findByUser(req.user.id);
+  return payrolls.map(mapPayrollToUserUI);
+}
+
 
   // 🟢 USER → bu ayki maaş (kart)
-  @Get('my/current')
-  getCurrent(@Req() req) {
-    return this.payrollService.findCurrent(req.user.id);
-  }
+@Get('my/current')
+async getCurrent(@Req() req) {
+  const payroll = await this.payrollService.findCurrent(req.user.id);
+  return payroll ? mapPayrollToUserUI(payroll) : null;
+}
+
+
 
   // 🔴 ADMIN → bekleyenler
   @Get('pending')
@@ -47,4 +52,23 @@ export class PayrollController {
   pay(@Param('id') id: string) {
     return this.payrollService.pay(id);
   }
+  // 🔴 ADMIN → tüm bordrolar
+@Get()
+async getAll() {
+  const payrolls = await this.payrollService.findAll();
+  return payrolls.map(mapPayrollToPendingUI);
+}
+
+// 🔴 ADMIN → bordro oluştur
+@Post()
+create(@Body() dto: {
+  userId: string;
+  month: number;
+  year: number;
+  netSalary: number;
+  note?: string;
+}) {
+  return this.payrollService.create(dto);
+}
+
 }
