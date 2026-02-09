@@ -16,7 +16,7 @@ import {
 export class PayrollController {
   constructor(private readonly payrollService: PayrollService) {}
 
-  // 🟢 USER → kendi bordroları
+  // 🟢 USER → kendi bordroları oluşturma
 @Get('my')
 async getMyPayrolls(@Req() req) {
   const payrolls = await this.payrollService.findByUser(req.user.id);
