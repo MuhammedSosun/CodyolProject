@@ -20,20 +20,19 @@ export class ProposalRepository {
           ? new Prisma.Decimal(dto.totalAmount)
           : undefined,
         createdByUserId: userId,
-
-        // ✅ Kalemleri ProposalItem tablosuna tek tek ve ilişkili olarak kaydeder
-        items: {
-          create: dto.items.map((item) => ({
-            description: item.product, // Frontend'den gelen 'product' adını veritabanındaki 'description' ile eşleştiriyoruz
-            quantity: Number(item.qty),
-            unitPrice: new Prisma.Decimal(item.price),
-            taxRate: Number(item.tax),
-          })),
-        },
+        // ❌ items kaldırıldı (schema'da Proposal.items yok)
       },
-      // ✅ İşlem bittikten sonra kalemleri de cevap olarak dönmesi için ekliyoruz
+      // ❌ include.items kaldırıldı
       include: {
-        items: true,
+        customer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            companyName: true,
+            phone: true,
+          },
+        },
       },
     });
   }
@@ -46,88 +45,60 @@ export class ProposalRepository {
   }
 
   findById(id: string, userId: string) {
-  return this.prisma.proposal.findFirst({
-    where: { 
-      id, 
-      createdByUserId: userId, 
-      deletedAt: null 
-    },
-    include: {
-      // 1. Müşteri bilgilerini getir
-      customer: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          companyName: true,
-          phone: true,
-        },
+    return this.prisma.proposal.findFirst({
+      where: {
+        id,
+        createdByUserId: userId,
+        deletedAt: null,
       },
-      // 2. ✅ Teklif kalemlerini (items) dahil et
-      items: {
-        select: {
-          id: true,
-          description: true,
-          quantity: true,
-          unitPrice: true,
-          taxRate: true,
+      include: {
+        customer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            companyName: true,
+            phone: true,
+          },
         },
-        orderBy: {
-          createdAt: 'asc', // Kalemleri eklenme sırasına göre diz
-        },
+        // ❌ items kaldırıldı (schema'da yok)
       },
-    },
-  });
-}
+    });
+  }
 
   async updateSafe(id: string, userId: string, dto: UpdateProposalDto) {
-  // 1. Yetki ve kayıt kontrolü
-  const current = await this.prisma.proposal.findFirst({
-    where: { id, createdByUserId: userId, deletedAt: null },
-  });
-  
-  if (!current) return null;
+    const current = await this.prisma.proposal.findFirst({
+      where: { id, createdByUserId: userId, deletedAt: null },
+    });
 
-  // 2. Güncelleme işlemi
-  return this.prisma.proposal.update({
-    where: { id },
-    data: {
-      title: dto.title,
-      customerId: dto.customerId,
-      status: dto.status,
-      validUntil: dto.validUntil ? new Date(dto.validUntil) : undefined,
-      totalAmount: dto.totalAmount
-        ? new Prisma.Decimal(dto.totalAmount)
-        : undefined,
-      
-      // ✅ Kalemleri (items) güncelleme mantığı
-      items: {
-        // Önce bu teklife ait eski kalemlerin tamamını siler
-        deleteMany: {}, 
-        // DTO'dan gelen yeni kalemleri tek tek oluşturur
-        create: dto.items?.map((item) => ({
-          description: item.product, // Frontend 'product' gönderiyor, DB 'description' bekliyor
-          quantity: Number(item.qty),
-          unitPrice: new Prisma.Decimal(item.price),
-          taxRate: Number(item.tax),
-        })),
+    if (!current) return null;
+
+    return this.prisma.proposal.update({
+      where: { id },
+      data: {
+        title: dto.title,
+        customerId: dto.customerId,
+        status: dto.status,
+        validUntil: dto.validUntil ? new Date(dto.validUntil) : undefined,
+        totalAmount: dto.totalAmount
+          ? new Prisma.Decimal(dto.totalAmount)
+          : undefined,
+
+        // ❌ items update kaldırıldı (schema'da Proposal.items yok)
       },
-    },
-    include: {
-      customer: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          companyName: true,
-          phone: true,
+      include: {
+        customer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            companyName: true,
+            phone: true,
+          },
         },
       },
-      // ✅ View ekranına güncel kalemlerin dönmesi için items'ı dahil ediyoruz
-      items: true, 
-    },
-  });
-}
+    });
+  }
 
   async softDeleteSafe(id: string, userId: string) {
     const current = await this.prisma.proposal.findFirst({
