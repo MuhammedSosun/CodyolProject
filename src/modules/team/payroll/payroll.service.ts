@@ -84,7 +84,7 @@ async create(data: {
 
   if (exists) {
     throw new BadRequestException(
-      'Bu kullanıcı için bu ay zaten bordro oluşturulmuş.'
+      'Bu kullanıcı için bu ay bordro oluşturulmuş.'
     );
   }
 
