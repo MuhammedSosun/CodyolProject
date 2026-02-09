@@ -8,8 +8,31 @@ import {
   IsDateString,
   MaxLength,
   IsNumberString,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ProposalStatus } from '@prisma/client';
+
+// Teklif kalemleri için gerekli alt sınıf
+export class CreateProposalItemDto {
+  @ApiProperty({ example: 'Yazılım Geliştirme' })
+  @IsString()
+  @IsNotEmpty()
+  product: string;
+
+  @ApiProperty({ example: 1 })
+  @IsNotEmpty()
+  qty: number;
+
+  @ApiProperty({ example: 5000 })
+  @IsNotEmpty()
+  price: number;
+
+  @ApiProperty({ example: 20 })
+  @IsNotEmpty()
+  tax: number;
+}
 
 export class CreateProposalDto {
   @ApiProperty({
@@ -52,4 +75,14 @@ export class CreateProposalDto {
   @IsOptional()
   @IsNumberString()
   totalAmount?: string;
+
+  // ✅ Repository'de hata veren eksik alan eklendi:
+  @ApiProperty({
+    type: [CreateProposalItemDto],
+    description: 'Teklif kalemleri listesi',
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateProposalItemDto)
+  items: CreateProposalItemDto[];
 }

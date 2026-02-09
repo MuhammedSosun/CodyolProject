@@ -46,6 +46,7 @@ export class ProposalService {
         currency: p.currency,
         status: p.status,
         createdAt: p.createdAt,
+        validUntil: p.validUntil, 
         customerName: p.customer?.fullName,
         customerEmail: p.customer?.email,
       })),
