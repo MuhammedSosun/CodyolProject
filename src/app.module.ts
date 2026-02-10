@@ -13,9 +13,9 @@ import { TransactionModule } from './modules/transaction/transaction.module';
 import { LeavesModule } from './modules/team/leaves/leaves.module';
 import { PayrollModule } from './modules/team/payroll/payroll.module';
 
-
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { UserModule } from './modules/user/user.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -27,10 +27,11 @@ import { UserModule } from './modules/user/user.module';
     ProposalModule,
     ProfileModule,
     TeamsModule,
-    LeavesModule, 
+    LeavesModule,
     PayrollModule,
     TransactionModule,
     UserModule,
+    DashboardModule,
   ],
   providers: [
     {
