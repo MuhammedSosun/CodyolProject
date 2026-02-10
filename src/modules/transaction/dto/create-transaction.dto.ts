@@ -1,70 +1,62 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  IsDateString,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TransactionType, PaymentMethod } from '../enums/transaction.enums';
-import { IsNumberString } from 'class-validator';
+import { TransactionType, PaymentMethod } from '../enums/transaction.enums'; // 👈 Enum'ları buraya da çekiyoruz
 
 export class CreateTransactionDto {
-  @ApiProperty({ enum: TransactionType, example: TransactionType.INCOME })
-  @IsEnum(TransactionType)
+  @ApiProperty({ enum: TransactionType })
+  @IsNotEmpty()
+  @IsEnum(TransactionType) // 👈 Bu satır sayesinde Swagger ve Backend sadece INCOME/EXPENSE kabul eder
   type: TransactionType;
 
-  // Prisma Decimal için en güvenlisi string
-  @ApiProperty({
-    example: '12500.00',
-    description: 'Decimal string',
-  })
+  @ApiProperty()
   @IsNotEmpty()
-  @IsNumberString()
-  amount: string;
+  @IsNumber() // Tutarın sayı olmasını zorunlu kılar
+  amount: number;
 
-  @ApiPropertyOptional({ example: 'TRY' })
+  @ApiProperty({ required: false, default: 'TRY' })
   @IsOptional()
   @IsString()
   currency?: string;
 
-  @ApiPropertyOptional({
-    example: '2026-01-10T00:00:00.000Z',
-  })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsDateString()
   date?: string;
 
-  @ApiPropertyOptional({ example: 'Web sitesi ödeme' })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ example: 'Satış' })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   category?: string;
 
-  @ApiPropertyOptional({
-    enum: PaymentMethod,
-    example: PaymentMethod.BANK_TRANSFER,
-  })
+  @ApiProperty({ enum: PaymentMethod, required: false })
   @IsOptional()
-  @IsEnum(PaymentMethod)
+  @IsEnum(PaymentMethod) // 👈 Ödeme yöntemi kontrolü
   paymentMethod?: PaymentMethod;
 
-  @ApiPropertyOptional({ example: 'DEKONT-123' })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   referenceNo?: string;
 
-  @ApiPropertyOptional({ example: 'customer-uuid' })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsUUID()
   customerId?: string;
 
-  @ApiPropertyOptional({ example: 'proposal-uuid' })
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsUUID()
   proposalId?: string;

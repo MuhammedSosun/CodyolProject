@@ -10,6 +10,9 @@ import { TransactionListQueryDto } from './dto/transaction-list-query.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+// ✅ 1. ADIM: Oluşturduğun Enum'ları buraya import et
+import { TransactionType, PaymentMethod } from './enums/transaction.enums';
+
 @Injectable()
 export class TransactionService {
   constructor(
@@ -18,7 +21,7 @@ export class TransactionService {
   ) {}
 
   async create(dto: CreateTransactionDto, user: any) {
-    // ✅ 1) Proposal varsa: proposal'ı çek, customerId'yi bul
+    // Proposal kontrol mantığın aynen kalıyor
     let resolvedCustomerId = dto.customerId ?? null;
 
     if (dto.proposalId) {
@@ -31,19 +34,22 @@ export class TransactionService {
       if (!proposal.customerId)
         throw new BadRequestException('Proposal has no customer');
 
-      // proposal her zaman kazanır
       resolvedCustomerId = proposal.customerId;
     }
 
-    // ✅ 2) Create payload
+    // ✅ 2. ADIM: 'as any' yerine Enum kullanıyoruz
+    // Eğer DTO'dan gelen veri string ise, onu Enum tipine zorlayabilirsin
     const data: Prisma.TransactionCreateInput = {
-      type: dto.type as any,
+      type: dto.type as TransactionType, // 'as any' yerine
       amount: new Prisma.Decimal(dto.amount),
       currency: dto.currency ?? 'TRY',
       date: dto.date ? new Date(dto.date) : new Date(),
       description: dto.description ?? null,
       category: dto.category ?? null,
-      paymentMethod: (dto.paymentMethod ?? 'BANK_TRANSFER') as any,
+
+      // Varsayılan değer ataması ve tip güvenliği
+      paymentMethod: (dto.paymentMethod ??
+        PaymentMethod.BANK_TRANSFER) as PaymentMethod,
       referenceNo: dto.referenceNo ?? null,
 
       createdByUser: { connect: { id: user.id } },
@@ -72,8 +78,9 @@ export class TransactionService {
     const exists = await this.repo.findById(id);
     if (!exists) throw new NotFoundException('Transaction not found');
 
+    // ✅ 3. ADIM: Update kısmında da 'as any' temizliği
     const data: Prisma.TransactionUpdateInput = {
-      ...(dto.type ? { type: dto.type as any } : {}),
+      ...(dto.type ? { type: dto.type as TransactionType } : {}),
       ...(dto.amount ? { amount: new Prisma.Decimal(dto.amount) } : {}),
       ...(dto.currency ? { currency: dto.currency } : {}),
       ...(dto.date ? { date: new Date(dto.date) } : {}),
@@ -81,7 +88,11 @@ export class TransactionService {
         ? { description: dto.description ?? null }
         : {}),
       ...(dto.category !== undefined ? { category: dto.category ?? null } : {}),
-      ...(dto.paymentMethod ? { paymentMethod: dto.paymentMethod as any } : {}),
+
+      ...(dto.paymentMethod
+        ? { paymentMethod: dto.paymentMethod as PaymentMethod }
+        : {}),
+
       ...(dto.referenceNo !== undefined
         ? { referenceNo: dto.referenceNo ?? null }
         : {}),
@@ -95,6 +106,7 @@ export class TransactionService {
 
     return this.repo.update(id, data);
   }
+
   async getById(id: string) {
     const tx = await this.repo.findById(id);
     if (!tx) {
