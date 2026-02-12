@@ -285,7 +285,7 @@ model Payroll {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  month Int   // 1-12
+  month Int // 1-12
   year  Int
 
   netSalary Int
