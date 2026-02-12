@@ -17,6 +17,8 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { UserModule } from './modules/user/user.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 
+import { FilesModule } from './modules/files/files.module';
+
 @Module({
   imports: [
     PrismaModule,
@@ -32,6 +34,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     TransactionModule,
     UserModule,
     DashboardModule,
+
+    FilesModule,
   ],
   providers: [
     {
@@ -40,4 +44,4 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
