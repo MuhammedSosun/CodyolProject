@@ -1,77 +1,72 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
   IsDateString,
+  IsNumberString,
 } from 'class-validator';
-import { TransactionType, PaymentMethod } from '../enums/transaction.enums'; // 👈 Enum'ları buraya da çekiyoruz
+import { TransactionType, PaymentMethod } from '../enums/transaction.enums';
 
 export class CreateTransactionDto {
   @ApiProperty({ enum: TransactionType })
   @IsNotEmpty()
-  @IsEnum(TransactionType) // 👈 Bu satır sayesinde Swagger ve Backend sadece INCOME/EXPENSE kabul eder
+  @IsEnum(TransactionType)
   type: TransactionType;
 
-  @ApiProperty()
+  @ApiProperty({ example: '5000.00', description: 'Tutar' })
   @IsNotEmpty()
-<<<<<<< HEAD
-  @IsNumber() // Tutarın sayı olmasını zorunlu kılar
-  amount: number;
-=======
   @IsNumberString()
   amount: string;
-  
+
   @ApiPropertyOptional({ example: '5000.00', description: 'Tahsil Edilen / Ödenen' })
   @IsOptional()
   @IsNumberString()
-  paidAmount?: string; // ✅ Yeni
+  paidAmount?: string;
 
   @ApiPropertyOptional({ example: '2026-03-15T00:00:00.000Z' })
   @IsOptional()
   @IsDateString()
-  dueDate?: string; // ✅ Yeni
->>>>>>> odemeekranibackendguncelllendi
+  dueDate?: string;
 
-  @ApiProperty({ required: false, default: 'TRY' })
+  @ApiPropertyOptional({ default: 'TRY' })
   @IsOptional()
   @IsString()
   currency?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsDateString()
   date?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   category?: string;
 
-  @ApiProperty({ enum: PaymentMethod, required: false })
+  @ApiPropertyOptional({ enum: PaymentMethod })
   @IsOptional()
-  @IsEnum(PaymentMethod) // 👈 Ödeme yöntemi kontrolü
+  @IsEnum(PaymentMethod)
   paymentMethod?: PaymentMethod;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   referenceNo?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()
   customerId?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()
   proposalId?: string;
