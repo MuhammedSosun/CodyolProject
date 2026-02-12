@@ -17,7 +17,10 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { UserModule } from './modules/user/user.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 
-import { FilesModule } from './modules/files/files.module';
+import { ContractsModule } from './modules/files/contracts/contracts.module';
+import { SourceLinksModule } from './modules/files/source-links/source-links.module';
+import { LicensesModule } from './modules/files/licenses/licenses.module';
+import { HostingModule } from './modules/files/hosting/hosting.module';
 
 @Module({
   imports: [
@@ -35,7 +38,10 @@ import { FilesModule } from './modules/files/files.module';
     UserModule,
     DashboardModule,
 
-    FilesModule,
+    ContractsModule,
+    SourceLinksModule,
+    LicensesModule,
+    HostingModule
   ],
   providers: [
     {
