@@ -24,41 +24,44 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class TransactionController {
   constructor(private readonly service: TransactionService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create income/expense transaction' })
-  create(@Body() dto: CreateTransactionDto, @Req() req: any) {
-    return this.service.create(dto, req.user);
-  }
-
-  @Get()
-  @ApiOperation({ summary: 'List transactions (filter + pagination)' })
-  list(@Query() query: TransactionListQueryDto) {
-    return this.service.list(query);
-  }
-
+  // ✅ 1. SIRA: Statik route her zaman en üstte olmalı (404 hatasını önler)
   @Get('summary')
   @ApiOperation({ summary: 'Summary totals for income/expense' })
-  summary(
+  async summary(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return this.service.summary(dateFrom, dateTo);
   }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Update transaction' })
-  update(@Param('id') id: string, @Body() dto: UpdateTransactionDto) {
-    return this.service.update(id, dto);
+  @Post()
+  @ApiOperation({ summary: 'Create income/expense transaction' })
+  async create(@Body() dto: CreateTransactionDto, @Req() req: any) {
+    return this.service.create(dto, req.user);
   }
+
+  @Get()
+  @ApiOperation({ summary: 'List transactions (filter + pagination)' })
+  async list(@Query() query: TransactionListQueryDto) {
+    return this.service.list(query);
+  }
+
+  // ✅ SON SIRA: Dinamik route (:id) her zaman en altta olmalı
   @Get(':id')
   @ApiOperation({ summary: 'Get transaction detail (with relations)' })
-  getById(@Param('id') id: string) {
+  async getById(@Param('id') id: string) {
     return this.service.getById(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update transaction' })
+  async update(@Param('id') id: string, @Body() dto: UpdateTransactionDto) {
+    return this.service.update(id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Soft delete transaction' })
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
 }

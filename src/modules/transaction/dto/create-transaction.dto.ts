@@ -23,6 +23,16 @@ export class CreateTransactionDto {
   @IsNotEmpty()
   @IsNumberString()
   amount: string;
+  
+  @ApiPropertyOptional({ example: '5000.00', description: 'Tahsil Edilen / Ödenen' })
+  @IsOptional()
+  @IsNumberString()
+  paidAmount?: string; // ✅ Yeni
+
+  @ApiPropertyOptional({ example: '2026-03-15T00:00:00.000Z' })
+  @IsOptional()
+  @IsDateString()
+  dueDate?: string; // ✅ Yeni
 
   @ApiPropertyOptional({ example: 'TRY' })
   @IsOptional()

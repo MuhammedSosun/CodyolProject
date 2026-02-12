@@ -18,7 +18,6 @@ export class TransactionService {
   ) {}
 
   async create(dto: CreateTransactionDto, user: any) {
-    // ✅ 1) Proposal varsa: proposal'ı çek, customerId'yi bul
     let resolvedCustomerId = dto.customerId ?? null;
 
     if (dto.proposalId) {
@@ -31,14 +30,14 @@ export class TransactionService {
       if (!proposal.customerId)
         throw new BadRequestException('Proposal has no customer');
 
-      // proposal her zaman kazanır
       resolvedCustomerId = proposal.customerId;
     }
 
-    // ✅ 2) Create payload
     const data: Prisma.TransactionCreateInput = {
       type: dto.type as any,
       amount: new Prisma.Decimal(dto.amount),
+      paidAmount: new Prisma.Decimal(dto.paidAmount ?? '0'),
+      dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
       currency: dto.currency ?? 'TRY',
       date: dto.date ? new Date(dto.date) : new Date(),
       description: dto.description ?? null,
@@ -65,7 +64,18 @@ export class TransactionService {
   }
 
   async summary(dateFrom?: string, dateTo?: string) {
-    return this.repo.summary(dateFrom, dateTo);
+    const result = await this.repo.summary(dateFrom, dateTo);
+
+    // ✅ Frontend statsRes.data.data olarak okuyabilsin diye 'data' içinde dönüyoruz
+    return {
+      data: {
+        totalSales: result.totalSales,
+        totalCollected: result.totalCollected,
+        pendingPayment: result.pendingPayment,
+        totalExpense: result.totalExpense,
+        currency: result.currency,
+      },
+    };
   }
 
   async update(id: string, dto: UpdateTransactionDto) {
@@ -75,6 +85,8 @@ export class TransactionService {
     const data: Prisma.TransactionUpdateInput = {
       ...(dto.type ? { type: dto.type as any } : {}),
       ...(dto.amount ? { amount: new Prisma.Decimal(dto.amount) } : {}),
+      ...(dto.paidAmount ? { paidAmount: new Prisma.Decimal(dto.paidAmount) } : {}),
+      ...(dto.dueDate ? { dueDate: new Date(dto.dueDate) } : {}),
       ...(dto.currency ? { currency: dto.currency } : {}),
       ...(dto.date ? { date: new Date(dto.date) } : {}),
       ...(dto.description !== undefined
@@ -95,6 +107,7 @@ export class TransactionService {
 
     return this.repo.update(id, data);
   }
+
   async getById(id: string) {
     const tx = await this.repo.findById(id);
     if (!tx) {
