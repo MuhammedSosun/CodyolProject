@@ -18,23 +18,8 @@ export class CreateTransactionDto {
 
   @ApiProperty()
   @IsNotEmpty()
-<<<<<<< HEAD
   @IsNumber() // Tutarın sayı olmasını zorunlu kılar
   amount: number;
-=======
-  @IsNumberString()
-  amount: string;
-  
-  @ApiPropertyOptional({ example: '5000.00', description: 'Tahsil Edilen / Ödenen' })
-  @IsOptional()
-  @IsNumberString()
-  paidAmount?: string; // ✅ Yeni
-
-  @ApiPropertyOptional({ example: '2026-03-15T00:00:00.000Z' })
-  @IsOptional()
-  @IsDateString()
-  dueDate?: string; // ✅ Yeni
->>>>>>> odemeekranibackendguncelllendi
 
   @ApiProperty({ required: false, default: 'TRY' })
   @IsOptional()

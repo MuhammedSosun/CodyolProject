@@ -26,6 +26,7 @@ export class TransactionRepository {
     });
   }
 
+  // 🔥 TEK VE DOĞRU findById
   findById(id: string) {
     return this.prisma.transaction.findFirst({
       where: { id, deletedAt: null },
@@ -112,7 +113,7 @@ export class TransactionRepository {
     const [incomeAgg, expenseAgg] = await this.prisma.$transaction([
       this.prisma.transaction.aggregate({
         where: { ...baseWhere, type: TransactionType.INCOME as any },
-        _sum: { amount: true, paidAmount: true },
+        _sum: { amount: true },
       }),
       this.prisma.transaction.aggregate({
         where: { ...baseWhere, type: TransactionType.EXPENSE as any },
@@ -121,15 +122,12 @@ export class TransactionRepository {
     ]);
 
     const incomeTotal = incomeAgg._sum.amount ?? new Prisma.Decimal(0);
-    const incomeCollected = incomeAgg._sum.paidAmount ?? new Prisma.Decimal(0);
     const expenseTotal = expenseAgg._sum.amount ?? new Prisma.Decimal(0);
 
-    // ✅ Servisin beklediği yeni alan isimleriyle döndürüyoruz
     return {
-      totalSales: incomeTotal.toFixed(2),
-      totalCollected: incomeCollected.toFixed(2),
-      pendingPayment: incomeTotal.minus(incomeCollected).toFixed(2),
-      totalExpense: expenseTotal.toFixed(2),
+      incomeTotal: incomeTotal.toFixed(2),
+      expenseTotal: expenseTotal.toFixed(2),
+      net: incomeTotal.minus(expenseTotal).toFixed(2),
       currency: 'TRY',
     };
   }

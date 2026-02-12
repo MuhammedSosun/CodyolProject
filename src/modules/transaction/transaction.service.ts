@@ -42,8 +42,6 @@ export class TransactionService {
     const data: Prisma.TransactionCreateInput = {
       type: dto.type as TransactionType, // 'as any' yerine
       amount: new Prisma.Decimal(dto.amount),
-      paidAmount: new Prisma.Decimal(dto.paidAmount ?? '0'),
-      dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
       currency: dto.currency ?? 'TRY',
       date: dto.date ? new Date(dto.date) : new Date(),
       description: dto.description ?? null,
@@ -73,18 +71,7 @@ export class TransactionService {
   }
 
   async summary(dateFrom?: string, dateTo?: string) {
-    const result = await this.repo.summary(dateFrom, dateTo);
-
-    // ✅ Frontend statsRes.data.data olarak okuyabilsin diye 'data' içinde dönüyoruz
-    return {
-      data: {
-        totalSales: result.totalSales,
-        totalCollected: result.totalCollected,
-        pendingPayment: result.pendingPayment,
-        totalExpense: result.totalExpense,
-        currency: result.currency,
-      },
-    };
+    return this.repo.summary(dateFrom, dateTo);
   }
 
   async update(id: string, dto: UpdateTransactionDto) {
@@ -95,8 +82,6 @@ export class TransactionService {
     const data: Prisma.TransactionUpdateInput = {
       ...(dto.type ? { type: dto.type as TransactionType } : {}),
       ...(dto.amount ? { amount: new Prisma.Decimal(dto.amount) } : {}),
-      ...(dto.paidAmount ? { paidAmount: new Prisma.Decimal(dto.paidAmount) } : {}),
-      ...(dto.dueDate ? { dueDate: new Date(dto.dueDate) } : {}),
       ...(dto.currency ? { currency: dto.currency } : {}),
       ...(dto.date ? { date: new Date(dto.date) } : {}),
       ...(dto.description !== undefined
