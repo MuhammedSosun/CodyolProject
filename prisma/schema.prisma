@@ -24,8 +24,7 @@ model User {
   createdTasks      Task[]         @relation("TaskCreator")
   teamMemberships   TeamMember[]
   transactions      Transaction[]  @relation("UserTransactions")
-
-   payrolls Payroll[]
+  payrolls          Payroll[]
 }
 
 model RefreshToken {
@@ -166,8 +165,10 @@ model Transaction {
   id              String          @id @default(uuid())
   type            TransactionType
   amount          Decimal         @db.Decimal(12, 2)
+  paidAmount      Decimal         @default(0) @db.Decimal(12, 2)
   currency        String          @default("TRY")
   date            DateTime        @default(now())
+  dueDate         DateTime?
   description     String?
   category        String?
   paymentMethod   PaymentMethod   @default(BANK_TRANSFER)
@@ -272,8 +273,6 @@ enum LeaveStatus {
   REJECTED
 }
 
-
-
 //teams payrol için
 enum PayrollStatus {
   PAID
@@ -283,21 +282,11 @@ enum PayrollStatus {
 model Payroll {
   id String @id @default(uuid())
 
-<<<<<<< HEAD
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   month Int   // 1-12
   year  Int
-=======
-  type     TransactionType
-  amount   Decimal         @db.Decimal(12, 2)
-  paidAmount    Decimal         @default(0) @db.Decimal(12, 2) // ✅ Yeni: Ödenen/Tahsil Edilen
-  currency String          @default("TRY")
-
-  date DateTime @default(now())
-  dueDate       DateTime?       // ✅ Yeni: Son Ödeme / Vade Tarihi
->>>>>>> odemeekranibackendguncelllendi
 
   netSalary Int
   status    PayrollStatus @default(PENDING)
@@ -311,4 +300,91 @@ model Payroll {
   @@unique([userId, month, year]) // aynı ayda 2 bordro olmasın
   @@index([userId])
   @@index([status])
+}
+
+enum FileStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SourceLinkType {
+  FRONTEND
+  BACKEND
+  LIVE
+  OTHER
+}
+
+model ContractFile {
+  id              String     @id @default(uuid())
+  createdByUserId String
+  title           String
+  fileUrl         String
+  status          FileStatus @default(ACTIVE)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  createdByUser User @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  @@index([createdByUserId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model SourceCodeLink {
+  id              String         @id @default(uuid())
+  createdByUserId String
+  title           String
+  url             String
+  type            SourceLinkType @default(OTHER)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+
+  createdByUser User @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  @@index([createdByUserId])
+  @@index([type])
+  @@index([deletedAt])
+}
+
+model License {
+  id              String     @id @default(uuid())
+  createdByUserId String
+  title           String
+  provider        String?
+  startDate       DateTime?
+  endDate         DateTime?
+  status          FileStatus @default(ACTIVE)
+  note            String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  createdByUser User @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  @@index([createdByUserId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model HostingInfo {
+  id              String     @id @default(uuid())
+  createdByUserId String
+  title           String
+  provider        String?
+  ip              String?
+  domain          String?
+  dbPassword      String? // PROD'da şifreleme önerilir
+  note            String?
+  status          FileStatus @default(ACTIVE)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  createdByUser User @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  @@index([createdByUserId])
+  @@index([status])
+  @@index([deletedAt])
 }
