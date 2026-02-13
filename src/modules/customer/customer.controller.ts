@@ -19,12 +19,18 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { Public } from '../auth/decorators/public.decorator';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { TransactionService } from '../transaction/transaction.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @ApiTags('Customer')
 @ApiBearerAuth('JWT-auth')
 @Controller('api/customers')
 export class CustomerController {
-  constructor(private readonly service: CustomerService) {}
+  constructor(private readonly service: CustomerService,
+    private readonly prisma: PrismaService,
+    private readonly transactionService: TransactionService, // 1. Buraya enjekte et
+  ) {}
 
   @Post()
   create(@Body() dto: CreateCustomerDto, @Req() req) {
@@ -51,4 +57,12 @@ getById(@Param('id') id: string, @Req() req) {
   delete(@Param('id') id: string) {
     return this.service.delete(id);
   }
+  @Get(':id/transactions')
+@ApiOperation({ summary: 'Bir müşteriye ait tüm ödemeleri listeler' })
+async getTransactions(
+  @Param('id') id: string, 
+  @Query() query: PaginationQueryDto // Senin paylaştığın sayfalama DTO'su
+) {
+  return this.transactionService.getCustomerTransactions(id, query);
+}
 }

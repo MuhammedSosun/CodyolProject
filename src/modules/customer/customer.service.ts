@@ -11,13 +11,16 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CustomerResponseDto } from './dto/customer-response.dto';
 import { CustomerStatus } from './enums/customer-status.enum';
 import { CustomerListQueryDto } from './dto/customer-list-query.dto';
+import { TransactionService } from '../transaction/transaction.service';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @Injectable()
 export class CustomerService {
   constructor(
-    private readonly repo: CustomerRepository,
-    private readonly prisma: PrismaService,
-  ) {}
+  private readonly repo: CustomerRepository,
+  private readonly prisma: PrismaService,
+  private readonly transactionService: TransactionService, // Burada olması normal
+) {}
 
   async create(dto: CreateCustomerDto, user: any) {
     if (dto.email) {
@@ -124,4 +127,14 @@ export class CustomerService {
       updatedAt: c.updatedAt,
     };
   }
+  async getCustomerTransactions(id: string, query: PaginationQueryDto) {
+    const customer = await this.repo.findById(id);
+    if (!customer) throw new NotFoundException('Müşteri bulunamadı');
+
+    // TransactionService'in list metodunu çağırıyoruz
+    return this.transactionService.list({
+        ...query,
+        customerId: id
+    });
+}
 }

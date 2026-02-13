@@ -43,57 +43,61 @@ export class TransactionRepository {
     });
   }
 
-  async list(query: TransactionListQueryDto) {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
+ async list(query: TransactionListQueryDto) {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 10;
+  const skip = (page - 1) * limit;
 
-    const where: Prisma.TransactionWhereInput = {
-      deletedAt: null,
-      ...(query.type ? { type: query.type as any } : {}),
-      ...(query.category ? { category: query.category } : {}),
-      ...(query.q
-        ? {
-            OR: [
-              { description: { contains: query.q, mode: 'insensitive' } },
-              { category: { contains: query.q, mode: 'insensitive' } },
-              { referenceNo: { contains: query.q, mode: 'insensitive' } },
-            ],
-          }
-        : {}),
-      ...(query.dateFrom || query.dateTo
-        ? {
-            date: {
-              ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
-              ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
-            },
-          }
-        : {}),
-    };
+  const where: Prisma.TransactionWhereInput = {
+    deletedAt: null,
+    
+    // ✅ BURAYI EKLE: Eğer query içinde customerId varsa filtreye ekle
+    ...(query.customerId ? { customerId: query.customerId } : {}),
 
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.transaction.findMany({
-        where,
-        orderBy: { date: 'desc' },
-        skip,
-        take: limit,
-        include: {
-          customer: {
-            select: { id: true, fullName: true, companyName: true },
+    ...(query.type ? { type: query.type as any } : {}),
+    ...(query.category ? { category: query.category } : {}),
+    ...(query.q
+      ? {
+          OR: [
+            { description: { contains: query.q, mode: 'insensitive' } },
+            { category: { contains: query.q, mode: 'insensitive' } },
+            { referenceNo: { contains: query.q, mode: 'insensitive' } },
+          ],
+        }
+      : {}),
+    ...(query.dateFrom || query.dateTo
+      ? {
+          date: {
+            ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
+            ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
           },
-          proposal: {
-            select: { id: true, title: true, status: true },
-          },
-          createdByUser: {
-            select: { id: true, username: true },
-          },
+        }
+      : {}),
+  };
+
+  const [items, total] = await this.prisma.$transaction([
+    this.prisma.transaction.findMany({
+      where,
+      orderBy: { date: 'desc' },
+      skip,
+      take: limit,
+      include: {
+        customer: {
+          select: { id: true, fullName: true, companyName: true },
         },
-      }),
-      this.prisma.transaction.count({ where }),
-    ]);
+        proposal: {
+          select: { id: true, title: true, status: true },
+        },
+        createdByUser: {
+          select: { id: true, username: true },
+        },
+      },
+    }),
+    this.prisma.transaction.count({ where }),
+  ]);
 
-    return { items, page, limit, total };
-  }
+  return { items, page, limit, total };
+}
 
   async summary(dateFrom?: string, dateTo?: string) {
     const dateFilter: Prisma.DateTimeFilter | undefined =

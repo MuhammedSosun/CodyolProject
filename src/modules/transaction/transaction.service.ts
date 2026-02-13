@@ -12,13 +12,15 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 // ✅ 1. ADIM: Oluşturduğun Enum'ları buraya import et
 import { TransactionType, PaymentMethod } from './enums/transaction.enums';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @Injectable()
 export class TransactionService {
   constructor(
-    private readonly repo: TransactionRepository,
-    private readonly prisma: PrismaService,
-  ) {}
+  private readonly repo: TransactionRepository,
+  private readonly prisma: PrismaService,
+  
+) {}
 
   async create(dto: CreateTransactionDto, user: any) {
     // Proposal kontrol mantığın aynen kalıyor
@@ -136,4 +138,13 @@ export class TransactionService {
 
     return this.repo.softDelete(id);
   }
+
+  async getCustomerTransactions(customerId: string, query: PaginationQueryDto) {
+  // 1. Burada repository üzerinden doğrudan listeyi çağırıyoruz
+  // 'this.transactionService.list' HATALIDIR, çünkü zaten bu sınıfın içindesin.
+  return this.list({
+      ...query,
+      customerId: customerId
+  });
+}
 }

@@ -27,6 +27,11 @@ export class TransactionListQueryDto extends PaginationQueryDto {
   @IsString()
   category?: string;
 
+
+  @IsOptional()
+  @IsString()
+  customerId?: string;
+
   @ApiPropertyOptional({ example: 'web' })
   @IsOptional()
   @IsString()
