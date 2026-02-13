@@ -1,43 +1,82 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-    IsEmail,
-    IsOptional,
-    IsString,
-    MaxLength,
-} from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsDateString } from 'class-validator';
 
 export class UpdateProfileDto {
-    @ApiPropertyOptional({ example: 'Ahmet' })
-    @IsOptional()
-    @IsString()
-    @MaxLength(80)
-    firstName?: string;
+  @ApiPropertyOptional({ example: 'Ahmet' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  firstName?: string;
 
-    @ApiPropertyOptional({ example: 'Yılmaz' })
-    @IsOptional()
-    @IsString()
-    @MaxLength(80)
-    lastName?: string;
+  @ApiPropertyOptional({ example: 'Yılmaz' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  lastName?: string;
 
+  @ApiPropertyOptional({ example: '1990-01-01' })
+  @IsOptional()
+  @IsDateString()
+  birthDate?: Date;
 
+  @ApiPropertyOptional({ example: 'A Rh+' })
+  @IsOptional()
+  @IsString()
+  bloodGroup?: string;
 
-    @ApiPropertyOptional({ example: '+90 555 123 45 67' })
-    @IsOptional()
-    @IsString()
-    @MaxLength(40)
-    phone?: string;
+  @ApiPropertyOptional({ example: 'https://cdn.com/avatar.png' })
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
 
-    @ApiPropertyOptional({ example: 'Sales Manager' })
-    @IsOptional()
-    @IsString()
-    @MaxLength(120)
-    position?: string;
+  @ApiPropertyOptional({ example: 'Yazılım geliştiriciyim.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  bio?: string;
 
-    @ApiPropertyOptional({
-        example: 'CRM süreçlerinden sorumluyum.',
-    })
-    @IsOptional()
-    @IsString()
-    @MaxLength(500)
-    bio?: string;
+  @ApiPropertyOptional({ example: '+90 555...' })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional({ example: 'İstanbul, Türkiye' })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ApiPropertyOptional({ example: 'İstanbul' })
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @ApiPropertyOptional({ example: 'Senior Developer' })
+  @IsOptional()
+  @IsString()
+  position?: string;
+
+  @ApiPropertyOptional({ example: 'IT' })
+  @IsOptional()
+  @IsString()
+  department?: string;
+
+  @ApiPropertyOptional({ example: 'TR00 1111...' })
+  @IsOptional()
+  @IsString()
+  iban?: string;
+
+  @ApiPropertyOptional({ example: 'X Bankası' })
+  @IsOptional()
+  @IsString()
+  bankName?: string;
+
+  @ApiPropertyOptional({ example: 'Mehmet Yılmaz' })
+  @IsOptional()
+  @IsString()
+  emergencyPerson?: string;
+
+  @ApiPropertyOptional({ example: '+90 544...' })
+  @IsOptional()
+  @IsString()
+  emergencyPhone?: string;
 }

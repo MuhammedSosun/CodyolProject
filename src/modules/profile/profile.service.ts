@@ -1,44 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { ProfileRepository } from './profile.repository';
 import { UpdateProfileDto } from './dto/update-profile';
-import { ProfileResponseDto } from './dto/profile-response';
 
 @Injectable()
 export class ProfileService {
-    constructor(private readonly repo: ProfileRepository) { }
+  constructor(private readonly repo: ProfileRepository) {}
 
-    // 🔹 GET /profile
-    async getProfile(userId: string, email?: string): Promise<ProfileResponseDto> {
-        const profile =
-            (await this.repo.findByUserId(userId)) ??
-            (await this.repo.upsert(userId, {}));
+  async getProfile(userId: string, email: string) {
+    let profile = await this.repo.findByUserId(userId);
 
-        return this.toResponse(profile, email);
+    if (!profile) {
+      // Profil yoksa boş bir tane oluştur (Lazy Initialization)
+      profile = await this.repo.upsert(userId, {});
     }
 
-    // 🔹 PATCH /profile
-    async updateProfile(
-        userId: string,
-        dto: UpdateProfileDto,
-        email?: string,
-    ): Promise<ProfileResponseDto> {
-        const updated = await this.repo.upsert(userId, dto);
-        return this.toResponse(updated, email);
-    }
+    return this.toResponse(profile, email);
+  }
 
-    // 🔁 Mapper
-    private toResponse(profile: any, email?: string): ProfileResponseDto {
-        return {
-            id: profile.id,
-            userId: profile.userId,
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            phone: profile.phone,
-            position: profile.position,
-            bio: profile.bio,
-            email, // ✅ JWT’den
-            createdAt: profile.createdAt,
-            updatedAt: profile.updatedAt,
-        };
-    }
+  async updateProfile(userId: string, dto: UpdateProfileDto, email: string) {
+    const updated = await this.repo.upsert(userId, dto);
+    return this.toResponse(updated, email);
+  }
+
+  private toResponse(profile: any, email: string) {
+    return {
+      ...profile, // Veritabanındaki tüm alanlar (firstName, bio, iban, vb.)
+      email, // Token'dan gelen güncel email
+    };
+  }
 }
