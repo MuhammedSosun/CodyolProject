@@ -8,23 +8,27 @@ datasource db {
 }
 
 model User {
-  id                String         @id @default(uuid())
-  username          String         @unique
-  email             String         @unique
+  id                String           @id @default(uuid())
+  username          String           @unique
+  email             String           @unique
   password          String
-  role              Role           @default(USER)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  role              Role             @default(USER)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   deletedAt         DateTime?
-  createdActivities Activity[]     @relation("UserActivities")
-  ownedCustomers    Customer[]     @relation("CustomerOwner")
+  createdActivities Activity[]       @relation("UserActivities")
+  ownedCustomers    Customer[]       @relation("CustomerOwner")
   profile           Profile?
-  refreshTokens     RefreshToken[] @relation("UserRefreshTokens")
-  assignedTasks     Task[]         @relation("TaskAssignee")
-  createdTasks      Task[]         @relation("TaskCreator")
+  refreshTokens     RefreshToken[]   @relation("UserRefreshTokens")
+  assignedTasks     Task[]           @relation("TaskAssignee")
+  createdTasks      Task[]           @relation("TaskCreator")
   teamMemberships   TeamMember[]
-  transactions      Transaction[]  @relation("UserTransactions")
+  transactions      Transaction[]    @relation("UserTransactions")
   payrolls          Payroll[]
+  contractFiles     ContractFile[]
+  sourceCodeLinks   SourceCodeLink[]
+  licenses          License[]
+  hostingInfos      HostingInfo[]
 }
 
 model RefreshToken {
@@ -126,16 +130,40 @@ model Proposal {
 }
 
 model Profile {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  firstName String?
-  lastName  String?
-  phone     String?
-  bio       String?
-  position  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  
+  // --- Temel Kimlik Bilgileri ---
+  firstName       String?
+  lastName        String?
+  birthDate       DateTime?
+  bloodGroup      String?    // Örn: "A Rh+"
+  avatarUrl       String?
+  bio             String?    @db.Text // Uzun biyografiler için
+  
+  // --- İletişim ve Konum ---
+  phone           String?
+  address         String?    @db.Text
+  location        String?    // Şehir/Ülke (Frontend'deki konum alanı)
+  
+  // --- Kurumsal Bilgiler ---
+  position        String?    // İş Ünvanı (Örn: "Senior Backend Developer")
+  department      String?    // Departman (Örn: "Yazılım Geliştirme")
+  startDate       DateTime?  // İşe Giriş Tarihi
+  employeeId      String?    @unique // Personel No (Kurumsal takip için)
+  
+  // --- Finansal Bilgiler ---
+  iban            String?    // Maaş ödemeleri için IBAN
+  bankName        String?    // Banka Adı
+  emergencyPerson String?    // Acil Durumda Aranacak Kişi
+  emergencyPhone  String?    // Acil Durum Telefonu
+
+  // --- Sistem Bilgileri ---
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Team {
