@@ -8,27 +8,31 @@ datasource db {
 }
 
 model User {
-  id                String           @id @default(uuid())
-  username          String           @unique
-  email             String           @unique
-  password          String
-  role              Role             @default(USER)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  deletedAt         DateTime?
-  createdActivities Activity[]       @relation("UserActivities")
-  ownedCustomers    Customer[]       @relation("CustomerOwner")
+  id        String    @id @default(uuid())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdActivities Activity[]     @relation("UserActivities")
+  ownedCustomers    Customer[]     @relation("CustomerOwner")
   profile           Profile?
-  refreshTokens     RefreshToken[]   @relation("UserRefreshTokens")
-  assignedTasks     Task[]           @relation("TaskAssignee")
-  createdTasks      Task[]           @relation("TaskCreator")
+  refreshTokens     RefreshToken[] @relation("UserRefreshTokens")
+  assignedTasks     Task[]         @relation("TaskAssignee")
+  createdTasks      Task[]         @relation("TaskCreator")
   teamMemberships   TeamMember[]
-  transactions      Transaction[]    @relation("UserTransactions")
+  transactions      Transaction[]  @relation("UserTransactions")
   payrolls          Payroll[]
-  contractFiles     ContractFile[]
-  sourceCodeLinks   SourceCodeLink[]
-  licenses          License[]
-  hostingInfos      HostingInfo[]
+
+  // contracts (eski: ContractFile)
+  contractFiles ContractFile[]
+
+  sourceCodeLinks SourceCodeLink[]
+  licenses        License[]
+  hostingInfos    HostingInfo[]
 }
 
 model RefreshToken {
@@ -37,29 +41,35 @@ model RefreshToken {
   expiredAt    DateTime
   userId       String
   user         User     @relation("UserRefreshTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Customer {
-  id           String         @id @default(uuid())
-  ownerUserId  String
-  fullName     String
-  email        String?
-  phone        String?
-  companyName  String?
-  vatNumber    String?
-  website      String?
-  address      String?
-  description  String?
-  designation  String?
-  status       CustomerStatus @default(NEW)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deletedAt    DateTime?
+  id          String         @id @default(uuid())
+  ownerUserId String
+  fullName    String
+  email       String?
+  phone       String?
+  companyName String?
+  vatNumber   String?
+  website     String?
+  address     String?
+  description String?
+  designation String?
+  status      CustomerStatus @default(NEW)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?
+
   activities   Activity[]
-  owner        User           @relation("CustomerOwner", fields: [ownerUserId], references: [id])
+  owner        User          @relation("CustomerOwner", fields: [ownerUserId], references: [id])
   proposals    Proposal[]
   tasks        Task[]
   transactions Transaction[]
+
+  // ✅ NEW: Customer -> ContractFile relation
+  contractFiles ContractFile[]
 
   @@index([ownerUserId])
   @@index([status])
@@ -79,10 +89,11 @@ model Task {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   deletedAt       DateTime?
-  activities      Activity[]
-  assignedUser    User       @relation("TaskAssignee", fields: [assignedUserId], references: [id])
-  createdByUser   User       @relation("TaskCreator", fields: [createdByUserId], references: [id])
-  customer        Customer?  @relation(fields: [customerId], references: [id])
+
+  activities    Activity[]
+  assignedUser  User       @relation("TaskAssignee", fields: [assignedUserId], references: [id])
+  createdByUser User       @relation("TaskCreator", fields: [createdByUserId], references: [id])
+  customer      Customer?  @relation(fields: [customerId], references: [id])
 
   @@index([assignedUserId])
   @@index([createdByUserId])
@@ -101,9 +112,10 @@ model Activity {
   description     String?
   createdAt       DateTime     @default(now())
   deletedAt       DateTime?
-  createdByUser   User?        @relation("UserActivities", fields: [createdByUserId], references: [id])
-  customer        Customer?    @relation(fields: [customerId], references: [id])
-  task            Task?        @relation(fields: [taskId], references: [id])
+
+  createdByUser User?     @relation("UserActivities", fields: [createdByUserId], references: [id])
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  task          Task?     @relation(fields: [taskId], references: [id])
 
   @@index([customerId])
   @@index([createdByUserId])
@@ -123,45 +135,46 @@ model Proposal {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   deletedAt       DateTime?
-  customer        Customer       @relation(fields: [customerId], references: [id])
-  transactions    Transaction[]
+
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  transactions Transaction[]
 
   @@index([customerId])
 }
 
 model Profile {
-  id              String   @id @default(uuid())
-  userId          String   @unique
-  
-  // --- Temel Kimlik Bilgileri ---
-  firstName       String?
-  lastName        String?
-  birthDate       DateTime?
-  bloodGroup      String?    // Örn: "A Rh+"
-  avatarUrl       String?
-  bio             String?    @db.Text // Uzun biyografiler için
-  
-  // --- İletişim ve Konum ---
-  phone           String?
-  address         String?    @db.Text
-  location        String?    // Şehir/Ülke (Frontend'deki konum alanı)
-  
-  // --- Kurumsal Bilgiler ---
-  position        String?    // İş Ünvanı (Örn: "Senior Backend Developer")
-  department      String?    // Departman (Örn: "Yazılım Geliştirme")
-  startDate       DateTime?  // İşe Giriş Tarihi
-  employeeId      String?    @unique // Personel No (Kurumsal takip için)
-  
-  // --- Finansal Bilgiler ---
-  iban            String?    // Maaş ödemeleri için IBAN
-  bankName        String?    // Banka Adı
-  emergencyPerson String?    // Acil Durumda Aranacak Kişi
-  emergencyPhone  String?    // Acil Durum Telefonu
+  id     String @id @default(uuid())
+  userId String @unique
 
-  // --- Sistem Bilgileri ---
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // --- Temel Kimlik Bilgileri ---
+  firstName  String?
+  lastName   String?
+  birthDate  DateTime?
+  bloodGroup String?
+  avatarUrl  String?
+  bio        String?   @db.Text
+
+  // --- İletişim ve Konum ---
+  phone    String?
+  address  String? @db.Text
+  location String?
+
+  // --- Kurumsal Bilgiler ---
+  position   String?
+  department String?
+  startDate  DateTime?
+  employeeId String?   @unique
+
+  // --- Finansal Bilgiler ---
+  iban            String?
+  bankName        String?
+  emergencyPerson String?
+  emergencyPhone  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -181,8 +194,9 @@ model TeamMember {
   userId    String
   role      String?
   createdAt DateTime @default(now())
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
   @@index([teamId])
@@ -207,9 +221,10 @@ model Transaction {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   deletedAt       DateTime?
-  createdByUser   User            @relation("UserTransactions", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  customer        Customer?       @relation(fields: [customerId], references: [id])
-  proposal        Proposal?       @relation(fields: [proposalId], references: [id])
+
+  createdByUser User      @relation("UserTransactions", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  proposal      Proposal? @relation(fields: [proposalId], references: [id])
 
   @@index([type])
   @@index([date])
@@ -301,7 +316,6 @@ enum LeaveStatus {
   REJECTED
 }
 
-//teams payrol için
 enum PayrollStatus {
   PAID
   PENDING
@@ -319,13 +333,12 @@ model Payroll {
   netSalary Int
   status    PayrollStatus @default(PENDING)
 
-  // Admin notu / açıklama
   note String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, month, year]) // aynı ayda 2 bordro olmasın
+  @@unique([userId, month, year])
   @@index([userId])
   @@index([status])
 }
@@ -342,19 +355,42 @@ enum SourceLinkType {
   OTHER
 }
 
+// ✅ UPDATED: ContractFile artık "Contracts" ekranını karşılıyor
 model ContractFile {
-  id              String     @id @default(uuid())
+  id              String @id @default(uuid())
   createdByUserId String
-  title           String
-  fileUrl         String
-  status          FileStatus @default(ACTIVE)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  deletedAt       DateTime?
 
-  createdByUser User @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  // Firma
+  customerId String?
+
+  // Sözleşme adı
+  title String
+
+  // Tarihler
+  startDate DateTime?
+  endDate   DateTime?
+
+  // Açıklama
+  description String? @db.Text
+
+  // Sözleşme durumu (Aktif/Pasif)
+  status FileStatus @default(ACTIVE)
+
+  // Dosya (opsiyonel)
+  fileUrl  String?
+  fileName String?
+  mimeType String?
+  size     Int?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdByUser User      @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
   @@index([createdByUserId])
+  @@index([customerId])
   @@index([status])
   @@index([deletedAt])
 }
@@ -403,7 +439,7 @@ model HostingInfo {
   provider        String?
   ip              String?
   domain          String?
-  dbPassword      String? // PROD'da şifreleme önerilir
+  dbPassword      String?
   note            String?
   status          FileStatus @default(ACTIVE)
   createdAt       DateTime   @default(now())
