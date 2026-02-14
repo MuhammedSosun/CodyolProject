@@ -1,33 +1,33 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, IsIn } from 'class-validator';
 import { CustomerStatus } from '@prisma/client';
-import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
+import { PaginationQueryDto } from '../../../common/pagination/pagination-query.dto';
 
 export class CustomerListQueryDto extends PaginationQueryDto {
-    @ApiPropertyOptional({
-        enum: ['createdAt', 'updatedAt', 'fullName'],
-        example: 'createdAt',
-    })
-    @IsOptional()
-    @IsIn(['createdAt', 'updatedAt', 'fullName'])
-    sortBy?: 'createdAt' | 'updatedAt' | 'fullName';
+  @ApiPropertyOptional({
+    enum: ['createdAt', 'updatedAt', 'fullName'],
+    example: 'createdAt',
+  })
+  @IsOptional()
+  @IsIn(['createdAt', 'updatedAt', 'fullName'])
+  sortBy?: 'createdAt' | 'updatedAt' | 'fullName';
 
 
-    @ApiPropertyOptional({
-        enum: ['asc', 'desc'],
-        example: 'desc',
-    })
-    @IsOptional()
-    @IsIn(['asc', 'desc'])
-    order?: 'asc' | 'desc';
+  @ApiPropertyOptional({
+    enum: ['asc', 'desc'],
+    example: 'desc',
+  })
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  order?: 'asc' | 'desc';
 
-    @ApiPropertyOptional({ enum: CustomerStatus })
-    @IsOptional()
-    @IsEnum(CustomerStatus)
-    status?: CustomerStatus;
+  @ApiPropertyOptional({ enum: CustomerStatus })
+  @IsOptional()
+  @IsEnum(CustomerStatus)
+  status?: CustomerStatus;
 
-    @ApiPropertyOptional({ example: '' })
-    @IsOptional()
-    @IsString()
-    search?: string;
+  @ApiPropertyOptional({ example: '' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
