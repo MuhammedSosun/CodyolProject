@@ -16,8 +16,9 @@ async function bootstrap() {
 
   // ✅ uploads klasörünü /uploads altında statik servis et
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads',
+    prefix: '/uploads/',
   });
+
 
   // ✅ Request logger
   app.use((req, res, next) => {

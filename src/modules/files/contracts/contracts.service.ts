@@ -9,6 +9,21 @@ export class ContractsService {
   constructor(private readonly repo: ContractsRepository) { }
 
   async create(userId: string, dto: CreateContractDto, file?: Express.Multer.File) {
+    console.log("=== CONTRACT CREATE START ===");
+    console.log("userId:", userId);
+    console.log("dto:", dto);
+    console.log("file exists?:", !!file);
+
+    if (file) {
+      console.log("file.originalname:", file.originalname);
+      console.log("file.mimetype:", file.mimetype);
+      console.log("file.size:", file.size);
+      console.log("file.filename:", (file as any).filename);
+      console.log("file.path:", (file as any).path);
+    } else {
+      console.log("⚠️ FILE IS UNDEFINED");
+    }
+
     const data: any = {
       createdByUser: { connect: { id: userId } },
       title: dto.title,
@@ -19,10 +34,14 @@ export class ContractsService {
     };
 
     if (dto.customerId) {
+      console.log("Connecting customer:", dto.customerId);
       data.customer = { connect: { id: dto.customerId } };
     }
 
     const fileUrl = this.resolveFileUrl(dto, file);
+
+    console.log("Generated fileUrl:", fileUrl);
+
     if (fileUrl) data.fileUrl = fileUrl;
 
     if (file) {
@@ -31,9 +50,16 @@ export class ContractsService {
       data.size = typeof file.size === 'number' ? file.size : null;
     }
 
+    console.log("Final Prisma data:", JSON.stringify(data, null, 2));
+
     const item = await this.repo.create(data);
+
+    console.log("Saved item:", item);
+    console.log("=== CONTRACT CREATE END ===");
+
     return this.toResponse(item);
   }
+
 
   async list(userId: string, query: ContractListQueryDto) {
     const page = query.page ?? 1;
@@ -142,11 +168,32 @@ export class ContractsService {
   }
 
   private resolveFileUrl(dto: { fileUrl?: string }, file?: Express.Multer.File): string | undefined {
-    if (dto?.fileUrl) return dto.fileUrl;
-    if (!file) return undefined;
+    console.log("resolveFileUrl called");
+    console.log("dto.fileUrl:", dto?.fileUrl);
 
-    const rel = `/uploads/contracts/${file.filename}`;
-    const base = process.env.FILE_BASE_URL; // ör: http://localhost:3050
-    return base ? `${base}${rel}` : rel;
+    if (dto?.fileUrl) {
+      console.log("Using dto.fileUrl");
+      return dto.fileUrl;
+    }
+
+    if (!file) {
+      console.log("No file provided, returning undefined");
+      return undefined;
+    }
+
+    console.log("File filename:", (file as any).filename);
+
+    const rel = `/uploads/contracts/${(file as any).filename}`;
+    const base = process.env.FILE_BASE_URL;
+
+    console.log("Base URL:", base);
+    console.log("Relative path:", rel);
+
+    const finalUrl = base ? `${base}${rel}` : rel;
+
+    console.log("Final URL:", finalUrl);
+
+    return finalUrl;
   }
+
 }

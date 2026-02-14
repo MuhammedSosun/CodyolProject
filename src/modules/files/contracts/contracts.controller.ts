@@ -33,6 +33,8 @@ export class ContractsController {
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: CreateContractDto,
   ) {
+    console.log("FILE:", file);
+    console.log("BODY:", dto);
     return this.service.create(req.user.id, dto, file);
   }
 
