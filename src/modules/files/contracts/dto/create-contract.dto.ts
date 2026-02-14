@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { FileStatus } from '@prisma/client';
 
 export class CreateContractDto {
@@ -9,10 +9,32 @@ export class CreateContractDto {
   @MaxLength(160)
   title: string;
 
-  @ApiProperty({ example: 'https://cdn.site.com/contracts/abc.pdf' })
+  // file upload varsa zorunlu olmamalı
+  @ApiPropertyOptional({ example: 'https://cdn.site.com/contracts/abc.pdf' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  fileUrl: string;
+  fileUrl?: string;
+
+  @ApiPropertyOptional({ description: 'Müşteri ID' })
+  @IsOptional()
+  @IsString()
+  customerId?: string;
+
+  @ApiPropertyOptional({ maxLength: 500 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+
+  @ApiPropertyOptional({ example: '2026-02-14' })
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @ApiPropertyOptional({ example: '2026-12-31' })
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
 
   @ApiPropertyOptional({ enum: FileStatus })
   @IsOptional()

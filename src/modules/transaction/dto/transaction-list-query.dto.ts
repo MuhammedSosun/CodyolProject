@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { TransactionType } from '../enums/transaction.enums';
-import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto'; // yolu sende nasılsa ona göre düzelt
+import { PaginationQueryDto } from '../../../common/pagination/pagination-query.dto'; // yolu sende nasılsa ona göre düzelt
 
 export class TransactionListQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({

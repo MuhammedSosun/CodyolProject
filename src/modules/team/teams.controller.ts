@@ -12,7 +12,7 @@ import {
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from "src/modules/auth/guards/jwt-auth.guard";
 import { TeamsService } from "./teams.service";
-import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
+import { PaginationQueryDto } from "src/common/pagination/pagination-query.dto";
 
 import { CreateTeamDto } from "./dto/create-team.dto";
 import { UpdateTeamMembersDto } from "./dto/update-team-members.dto";
@@ -23,7 +23,7 @@ import { UpdateUserRoleDto } from "./dto/update-user-role.dto";
 @UseGuards(JwtAuthGuard)
 @Controller("api/teams")
 export class TeamsController {
-  constructor(private readonly teamsService: TeamsService) {}
+  constructor(private readonly teamsService: TeamsService) { }
 
   // -------------------------------
   // SABİT ROUTE'LAR

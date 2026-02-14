@@ -61,6 +61,9 @@ model Customer {
   tasks        Task[]
   transactions Transaction[]
 
+  // ✅ EKLENDİ: ContractFile -> Customer relation (1 customer, many contractFiles)
+  contractFiles ContractFile[]
+
   @@index([ownerUserId])
   @@index([status])
   @@index([deletedAt])
@@ -345,16 +348,38 @@ enum SourceLinkType {
 model ContractFile {
   id              String     @id @default(uuid())
   createdByUserId String
-  title           String
-  fileUrl         String
-  status          FileStatus @default(ACTIVE)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  deletedAt       DateTime?
+
+  // ✅ EKLENDİ: Firma
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // Sözleşme adı
+  title String
+
+  // ✅ EKLENDİ: Tarihler
+  startDate DateTime?
+  endDate   DateTime?
+
+  // ✅ EKLENDİ: Açıklama
+  description String? @db.Text
+
+  // Sözleşme durumu
+  status FileStatus @default(ACTIVE)
+
+  // ✅ fileUrl artık opsiyonel (undefined/boş gelirse patlamasın)
+  fileUrl  String?
+  fileName String?
+  mimeType String?
+  size     Int?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   createdByUser User @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
 
   @@index([createdByUserId])
+  @@index([customerId])
   @@index([status])
   @@index([deletedAt])
 }
