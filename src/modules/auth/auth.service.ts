@@ -31,6 +31,7 @@ export class AuthService {
       accessToken: this.createAccessToken({
         id: user.id,
         username: user.username,
+        email: user.email, // JWT'ye email ekledik
         role: user.role,
       }),
       refreshToken: await this.createRefreshToken(user.id),
@@ -53,6 +54,7 @@ export class AuthService {
       accessToken: this.createAccessToken({
         id: user.id,
         username: user.username,
+        email: user.email, // JWT'ye email ekledik
         role: user.role,
       }),
       refreshToken: await this.createRefreshToken(user.id),
@@ -94,6 +96,7 @@ export class AuthService {
       accessToken: this.createAccessToken({
         id: token.user.id,
         username: token.user.username,
+        email: token.user.email, // JWT'ye email ekledik
         role: token.user.role,
       }),
       refreshToken: await this.createRefreshToken(token.user.id),
@@ -106,19 +109,21 @@ export class AuthService {
   }
 
   private createAccessToken(user: {
-    id: string;
-    username: string;
-    role: Role;
-  }) {
-    return this.jwt.sign(
-      {
-        sub: user.id,
-        username: user.username,
-        role: user.role,
-      },
-      { expiresIn: '2h' },
-    );
-  }
+  id: string;
+  username: string;
+  email: string;
+  role: Role;
+}) {
+  return this.jwt.sign(
+    {
+      sub: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    },
+    { expiresIn: '2h' },
+  );
+}
 
   private async createRefreshToken(userId: string) {
     await this.prisma.refreshToken.deleteMany({ where: { userId } });

@@ -22,4 +22,19 @@ export class ProfileRepository {
       },
     });
   }
+  async findWithUser(userId: string) {
+  return this.prisma.profile.findUnique({
+    where: { userId },
+    include: {
+      user: {
+        select: {
+          email: true,
+          username: true,
+          role: true,
+        },
+      },
+    },
+  });
+}
+
 }

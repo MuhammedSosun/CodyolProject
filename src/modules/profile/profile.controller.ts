@@ -7,19 +7,22 @@ import { UpdateProfileDto } from './dto/update-profile';
 @ApiTags('Profile')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
-@Controller('profile')
+@Controller('api/profile')
 export class ProfileController {
   constructor(private readonly service: ProfileService) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Giriş yapan kullanıcının profilini getirir' })
   async getMyProfile(@Req() req) {
-    return this.service.getProfile(req.user.id, req.user.email);
-  }
+  return this.service.getProfile(req.user.id);
+}
+
+
 
   @Patch('me')
   @ApiOperation({ summary: 'Kendi profilini günceller' })
   async updateMyProfile(@Req() req, @Body() dto: UpdateProfileDto) {
-    return this.service.updateProfile(req.user.id, dto, req.user.email);
-  }
+  return this.service.updateProfile(req.user.id, dto);
+}
+
 }

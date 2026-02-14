@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -26,4 +26,26 @@ export class UserController {
 
     return { meta: { page, limit }, data };
   }
+
+
+@Get(':id')
+async findOne(@Param('id') id: string) {
+  return this.prisma.user.findFirst({
+    where: {
+      id,
+      deletedAt: null,
+    },
+    include: {
+      profile: true,
+      teamMemberships: {
+        include: {
+          team: true,
+        },
+      },
+    },
+  });
+}
+
+
+
 }

@@ -15,9 +15,10 @@ export class UpdateProfileDto {
   lastName?: string;
 
   @ApiPropertyOptional({ example: '1990-01-01' })
-  @IsOptional()
-  @IsDateString()
-  birthDate?: Date;
+@IsOptional()
+@IsDateString()
+birthDate?: string;   // 🔥 string olmalı
+
 
   @ApiPropertyOptional({ example: 'A Rh+' })
   @IsOptional()
@@ -28,6 +29,14 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   avatarUrl?: string;
+
+
+  @ApiPropertyOptional({ example: '2023-01-01' })
+@IsOptional()
+@IsDateString()
+startDate?: string;   // 🔥 string olmalı
+
+
 
   @ApiPropertyOptional({ example: 'Yazılım geliştiriciyim.' })
   @IsOptional()

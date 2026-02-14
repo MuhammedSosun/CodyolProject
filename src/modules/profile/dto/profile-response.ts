@@ -8,7 +8,7 @@ export class ProfileResponseDto {
   userId: string;
 
   @ApiProperty({ example: 'ahmet@company.com' })
-  email: string; // JWT'den gelen veri
+  email: string;
 
   // --- Temel Bilgiler ---
   @ApiPropertyOptional({ example: 'Ahmet' })
