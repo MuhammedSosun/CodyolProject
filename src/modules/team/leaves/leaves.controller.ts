@@ -14,7 +14,7 @@ export class LeavesController {
 create(@Req() req, @Body() data) {
   return this.leavesService.create({
     ...data,
-    employee: req.user.username, // 🔥 ASIL OLAY
+    employee: req.user.username, 
   });
 }
 
