@@ -18,6 +18,7 @@ export const mapPayrollToPendingUI = (p) => ({
   netPayable: p.netSalary,
 
   status: p.status,
+  note: p.note,
 });
 
 export const mapPayrollToUserUI = (p) => ({
@@ -26,5 +27,7 @@ export const mapPayrollToUserUI = (p) => ({
   year: p.year,
   netPayable: p.netSalary,
   status: p.status,
+
+   note: p.note,
 });
 

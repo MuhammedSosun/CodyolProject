@@ -9,12 +9,18 @@ export class PayrollService {
   constructor(private prisma: PrismaService) {}
 
   // 🟢 USER → kendi bordroları
-  findByUser(userId: string) {
-    return this.prisma.payroll.findMany({
-      where: { userId },
-      orderBy: [{ year: 'desc' }, { month: 'desc' }],
-    });
-  }
+findByUser(userId: string) {
+  return this.prisma.payroll.findMany({
+    where: { userId },
+    include: {
+      user: {
+        include: { profile: true },
+      },
+    },
+    orderBy: [{ year: 'desc' }, { month: 'desc' }],
+  });
+}
+
 
   // 🟢 USER → bu ayki maaş
   findCurrent(userId: string) {

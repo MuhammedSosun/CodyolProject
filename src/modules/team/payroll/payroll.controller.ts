@@ -70,5 +70,9 @@ create(@Body() dto: {
 }) {
   return this.payrollService.create(dto);
 }
+@Get('user/:userId')
+findByUser(@Param('userId') userId: string) {
+  return this.payrollService.findByUser(userId);
+}
 
 }
