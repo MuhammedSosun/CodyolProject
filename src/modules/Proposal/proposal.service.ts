@@ -41,6 +41,7 @@ export class ProposalService {
       ...result,
       items: result.items.map((p) => ({
         id: p.id,
+        customerId: p.customer?.id,
         title: p.title,
         totalAmount: p.totalAmount,
         currency: p.currency,

@@ -138,7 +138,7 @@ export class ProposalRepository {
       this.prisma.proposal.findMany({
         where,
         include: {
-          customer: { select: { fullName: true, email: true } },
+          customer: { select: { id: true,fullName: true, email: true } },
         },
         orderBy: { [sortBy]: order },
         skip: (page - 1) * limit,
