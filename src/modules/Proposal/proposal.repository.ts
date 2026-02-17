@@ -20,9 +20,17 @@ export class ProposalRepository {
           ? new Prisma.Decimal(dto.totalAmount)
           : undefined,
         createdByUserId: userId,
-        // ❌ items kaldırıldı (schema'da Proposal.items yok)
+
+        // ✅ Yeni şemaya göre kalemleri ekliyoruz
+        items: {
+          create: dto.items?.map((item) => ({
+            description: item.description,
+            quantity: Number(item.quantity),
+            unitPrice: new Prisma.Decimal(item.unitPrice),
+            taxRate: Number(item.taxRate),
+          })),
+        },
       },
-      // ❌ include.items kaldırıldı
       include: {
         customer: {
           select: {
@@ -33,6 +41,8 @@ export class ProposalRepository {
             phone: true,
           },
         },
+        // ✅ Cevapta kalemlerin de gelmesini sağlıyoruz
+        items: true,
       },
     });
   }
@@ -41,6 +51,7 @@ export class ProposalRepository {
     return this.prisma.proposal.findMany({
       where: { createdByUserId: userId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
+      include: { items: true } // Listede kalem sayısı gerekebilir diye ekledik
     });
   }
 
@@ -61,7 +72,10 @@ export class ProposalRepository {
             phone: true,
           },
         },
-        // ❌ items kaldırıldı (schema'da yok)
+        // ✅ Teklif detayında kalemleri de getiriyoruz
+        items: {
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
   }
@@ -84,7 +98,16 @@ export class ProposalRepository {
           ? new Prisma.Decimal(dto.totalAmount)
           : undefined,
 
-        // ❌ items update kaldırıldı (schema'da Proposal.items yok)
+        // ✅ Kalemleri güncelleme: Mevcutları silip yenileri ekleme (En güvenli yol)
+        items: dto.items ? {
+          deleteMany: {},
+          create: dto.items.map((item) => ({
+            description: item.description,
+            quantity: Number(item.quantity),
+            unitPrice: new Prisma.Decimal(item.unitPrice),
+            taxRate: Number(item.taxRate),
+          })),
+        } : undefined,
       },
       include: {
         customer: {
@@ -96,6 +119,7 @@ export class ProposalRepository {
             phone: true,
           },
         },
+        items: true,
       },
     });
   }
@@ -139,6 +163,7 @@ export class ProposalRepository {
         where,
         include: {
           customer: { select: { fullName: true, email: true } },
+          _count: { select: { items: true } } // Kaç kalem olduğunu gösterir
         },
         orderBy: { [sortBy]: order },
         skip: (page - 1) * limit,

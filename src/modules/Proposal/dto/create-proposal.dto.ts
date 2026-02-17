@@ -7,31 +7,34 @@ import {
   IsUUID,
   IsDateString,
   MaxLength,
-  IsNumberString,
+  IsNumber,
   IsArray,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProposalStatus } from '@prisma/client';
 
-// Teklif kalemleri için gerekli alt sınıf
+// Teklif kalemleri - Prisma şemasıyla tam uyumlu hale getirildi
 export class CreateProposalItemDto {
-  @ApiProperty({ example: 'Yazılım Geliştirme' })
+  @ApiProperty({ example: 'Yazılım Geliştirme', description: 'Ürün veya hizmet adı' })
   @IsString()
   @IsNotEmpty()
-  product: string;
+  description: string; // Prisma: description
 
   @ApiProperty({ example: 1 })
+  @IsNumber() // Sayısal doğrulama eklendi
   @IsNotEmpty()
-  qty: number;
+  quantity: number; // Prisma: quantity
 
   @ApiProperty({ example: 5000 })
+  @IsNumber()
   @IsNotEmpty()
-  price: number;
+  unitPrice: number; // Prisma: unitPrice
 
-  @ApiProperty({ example: 20 })
+  @ApiProperty({ example: 20, default: 20 })
+  @IsNumber()
   @IsNotEmpty()
-  tax: number;
+  taxRate: number; // Prisma: taxRate
 }
 
 export class CreateProposalDto {
@@ -73,10 +76,9 @@ export class CreateProposalDto {
     description: 'Teklif toplam tutarı',
   })
   @IsOptional()
-  @IsNumberString()
+  @IsString() // @IsNumberString yerine IsString daha güvenli olabilir Decimal için
   totalAmount?: string;
 
-  // ✅ Repository'de hata veren eksik alan eklendi:
   @ApiProperty({
     type: [CreateProposalItemDto],
     description: 'Teklif kalemleri listesi',
