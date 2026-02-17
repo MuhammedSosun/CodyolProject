@@ -22,6 +22,7 @@ import { SourceLinksModule } from './modules/files/source-links/source-links.mod
 import { LicensesModule } from './modules/files/licenses/licenses.module';
 import { HostingModule } from './modules/files/hosting/hosting.module';
 import { ProgramModule } from './modules/program/program.module';
+import { ProjectModule } from './modules/project/project.module';
 
 @Module({
   imports: [
@@ -39,7 +40,7 @@ import { ProgramModule } from './modules/program/program.module';
     UserModule,
     DashboardModule,
     ProgramModule,
-
+    ProjectModule,
     ContractsModule,
     SourceLinksModule,
     LicensesModule,

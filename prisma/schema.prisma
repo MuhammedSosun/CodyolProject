@@ -65,6 +65,7 @@ model Customer {
 
   // ✅ EKLENDİ: ContractFile -> Customer relation (1 customer, many contractFiles)
   contractFiles ContractFile[]
+  projects      Project[]
 
   @@index([ownerUserId])
   @@index([status])
@@ -531,4 +532,41 @@ model ProgramPlan {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum ProjectStatus {
+  TEKLIF
+  GELISTIRME
+  TEST
+}
+
+enum ProjectType {
+  WEB
+  MOBIL
+  YAZILIM
+  TASARIM
+  DIGER
+}
+
+model Project {
+  id         String    @id @default(cuid())
+  name       String
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  type   ProjectType   @default(DIGER)
+  status ProjectStatus @default(TEKLIF)
+
+  price        Decimal?  @db.Decimal(12, 2)
+  currency     String    @default("TRY")
+  deliveryDate DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([customerId])
+  @@index([status])
+  @@index([type])
+  @@index([deletedAt])
 }
