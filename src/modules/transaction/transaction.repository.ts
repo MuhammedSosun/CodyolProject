@@ -50,25 +50,54 @@ export class TransactionRepository {
 
     const where: Prisma.TransactionWhereInput = {
       deletedAt: null,
-      ...(query.type ? { type: query.type as any } : {}),
-      ...(query.category ? { category: query.category } : {}),
-      ...(query.q
-        ? {
-            OR: [
-              { description: { contains: query.q, mode: 'insensitive' } },
-              { category: { contains: query.q, mode: 'insensitive' } },
-              { referenceNo: { contains: query.q, mode: 'insensitive' } },
-            ],
-          }
-        : {}),
-      ...(query.dateFrom || query.dateTo
-        ? {
-            date: {
-              ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
-              ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
-            },
-          }
-        : {}),
+
+      ...(query.type && { type: query.type }),
+      ...((query.dueDateFrom || query.dueDateTo) && {
+        dueDate: {
+          ...(query.dueDateFrom && { gte: new Date(query.dueDateFrom) }),
+          ...(query.dueDateTo && { lte: new Date(query.dueDateTo) }),
+        },
+      }),
+
+      ...(query.category && {
+        category: { contains: query.category, mode: 'insensitive' },
+      }),
+
+      ...(query.customerId && { customerId: query.customerId }),
+
+      ...(query.paymentMethod && { paymentMethod: query.paymentMethod }),
+
+      ...(query.q && {
+        OR: [
+          { description: { contains: query.q, mode: 'insensitive' } },
+          { category: { contains: query.q, mode: 'insensitive' } },
+          { referenceNo: { contains: query.q, mode: 'insensitive' } },
+        ],
+      }),
+
+      ...((query.dateFrom || query.dateTo) && {
+        date: {
+          ...(query.dateFrom && { gte: new Date(query.dateFrom) }),
+          ...(query.dateTo && { lte: new Date(query.dateTo) }),
+        },
+      }),
+
+      ...((query.minAmount || query.maxAmount) && {
+        amount: {
+          ...(query.minAmount && {
+            gte: new Prisma.Decimal(query.minAmount),
+          }),
+          ...(query.maxAmount && {
+            lte: new Prisma.Decimal(query.maxAmount),
+          }),
+        },
+      }),
+
+      ...(query.isPaid === 'true'
+        ? { paidAmount: { gt: 0 } }
+        : query.isPaid === 'false'
+          ? { paidAmount: 0 }
+          : {}),
     };
 
     const [items, total] = await this.prisma.$transaction([

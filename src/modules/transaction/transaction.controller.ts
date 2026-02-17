@@ -27,11 +27,8 @@ export class TransactionController {
   // ✅ 1. SIRA: Statik route her zaman en üstte olmalı (404 hatasını önler)
   @Get('summary')
   @ApiOperation({ summary: 'Summary totals for income/expense' })
-  async summary(
-    @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string,
-  ) {
-    return this.service.summary(dateFrom, dateTo);
+  async summary(@Query() query: TransactionListQueryDto) {
+    return this.service.summary(query.dateFrom, query.dateTo);
   }
 
   @Post()

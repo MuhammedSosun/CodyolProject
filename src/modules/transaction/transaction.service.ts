@@ -69,7 +69,35 @@ export class TransactionService {
   }
 
   async list(query: TransactionListQueryDto) {
-    return this.repo.list(query);
+    const result = await this.repo.list(query);
+
+    if (!query.dueStatus) return result;
+
+    const today = new Date();
+
+    const filteredItems = result.items.filter((item) => {
+      const remaining = Number(item.amount) - Number(item.paidAmount);
+
+      if (query.dueStatus === 'PAID') {
+        return remaining <= 0;
+      }
+
+      if (query.dueStatus === 'OVERDUE') {
+        return remaining > 0 && item.dueDate && new Date(item.dueDate) < today;
+      }
+
+      if (query.dueStatus === 'PENDING') {
+        return remaining > 0 && item.dueDate && new Date(item.dueDate) >= today;
+      }
+
+      return true;
+    });
+
+    return {
+      ...result,
+      items: filteredItems,
+      total: filteredItems.length,
+    };
   }
 
   async summary(dateFrom?: string, dateTo?: string) {
@@ -95,7 +123,9 @@ export class TransactionService {
     const data: Prisma.TransactionUpdateInput = {
       ...(dto.type ? { type: dto.type as TransactionType } : {}),
       ...(dto.amount ? { amount: new Prisma.Decimal(dto.amount) } : {}),
-      ...(dto.paidAmount ? { paidAmount: new Prisma.Decimal(dto.paidAmount) } : {}),
+      ...(dto.paidAmount
+        ? { paidAmount: new Prisma.Decimal(dto.paidAmount) }
+        : {}),
       ...(dto.dueDate ? { dueDate: new Date(dto.dueDate) } : {}),
       ...(dto.currency ? { currency: dto.currency } : {}),
       ...(dto.date ? { date: new Date(dto.date) } : {}),
