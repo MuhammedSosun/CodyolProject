@@ -56,19 +56,14 @@ export class CustomerRepository {
     return !!found;
   }
 
-  async list(params: CustomerListParams) {
-    const { status, search, page, limit, sortBy, order } = params;
+  async list(params: CustomerListParams & { ownerUserId: string }) {
+    const { status, search, page, limit, sortBy, order, ownerUserId } = params;
 
-    const where: Prisma.CustomerWhereInput = { deletedAt: null };
-
-    if (status) where.status = status as any;
-
-    if (search) {
-      where.OR = [
-        { fullName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-      ];
-    }
+    const where = this.buildWhere({
+      status,
+      search,
+      ownerUserId,
+    });
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.customer.findMany({
@@ -81,5 +76,30 @@ export class CustomerRepository {
     ]);
 
     return { items, total };
+  }
+
+  private buildWhere(filters: {
+    status?: string;
+    search?: string;
+    ownerUserId: string;
+  }): Prisma.CustomerWhereInput {
+    const where: Prisma.CustomerWhereInput = {
+      deletedAt: null,
+      ownerUserId: filters.ownerUserId,
+    };
+
+    if (filters.status) {
+      where.status = filters.status as any;
+    }
+
+    if (filters.search) {
+      where.OR = [
+        { fullName: { contains: filters.search, mode: 'insensitive' } },
+        { email: { contains: filters.search, mode: 'insensitive' } },
+        { companyName: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    return where;
   }
 }

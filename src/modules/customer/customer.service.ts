@@ -76,7 +76,7 @@ export class CustomerService {
     return this.toDetailResponse(customer);
   }
 
-  async list(query: CustomerListQueryDto) {
+  async list(query: CustomerListQueryDto, user: any) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
 
@@ -87,6 +87,7 @@ export class CustomerService {
       order: query.order === 'asc' ? 'asc' : 'desc',
       status: query.status,
       search: query.search,
+      ownerUserId: user.id,
     });
 
     return {

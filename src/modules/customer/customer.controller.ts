@@ -1,14 +1,14 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    Patch,
-    Post,
-    Query,
-    Req,
-    UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CustomerService } from './customer.service';
@@ -32,15 +32,14 @@ export class CustomerController {
   }
 
   @Get()
-  list(@Query() query: CustomerListQueryDto) {
-    return this.service.list(query);
+  list(@Query() query: CustomerListQueryDto, @Req() req) {
+    return this.service.list(query, req.user);
   }
 
   @Get(':id')
-getById(@Param('id') id: string, @Req() req) {
-  return this.service.findOne(id, req.user);
-}
-
+  getById(@Param('id') id: string, @Req() req) {
+    return this.service.findOne(id, req.user);
+  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
