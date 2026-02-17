@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProposalStatus } from '@prisma/client';
-import { CreateProposalItemDto } from './create-proposal.dto'; // Kalem yapısını buradan alıyoruz
+import { CreateProposalItemDto } from './create-proposal.dto'; // Create tarafında güncellediğimiz isimler buraya da yansır
 
 export class UpdateProposalDto {
   @ApiPropertyOptional({
@@ -24,7 +24,6 @@ export class UpdateProposalDto {
   @MaxLength(150)
   title?: string;
 
-  // ✅ Repository'de hata veren eksik alan: customerId
   @ApiPropertyOptional({
     example: 'customer-uuid',
     description: 'Yeni müşteri ID',
@@ -58,10 +57,9 @@ export class UpdateProposalDto {
   @IsNumber()
   totalAmount?: number;
 
-  // ✅ Repository'de hata veren eksik alan: items
   @ApiPropertyOptional({
     type: [CreateProposalItemDto],
-    description: 'Teklif kalemleri listesi',
+    description: 'Teklif kalemleri listesi (Güncelleme sırasında mevcutlar silinip bunlar eklenir)',
   })
   @IsOptional()
   @IsArray()

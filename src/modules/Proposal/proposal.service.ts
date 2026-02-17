@@ -39,7 +39,7 @@ export class ProposalService {
 
     return {
       ...result,
-      items: result.items.map((p) => ({
+      items: result.items.map((p: any) => ({
         id: p.id,
         customerId: p.customer?.id,
         title: p.title,
@@ -47,9 +47,11 @@ export class ProposalService {
         currency: p.currency,
         status: p.status,
         createdAt: p.createdAt,
-        validUntil: p.validUntil, 
+        validUntil: p.validUntil,
         customerName: p.customer?.fullName,
         customerEmail: p.customer?.email,
+        // ✅ Repository'de eklediğimiz kalem sayısını buraya yansıtabiliriz
+        itemsCount: p._count?.items || 0, 
       })),
     };
   }
