@@ -21,6 +21,7 @@ import { ContractsModule } from './modules/files/contracts/contracts.module';
 import { SourceLinksModule } from './modules/files/source-links/source-links.module';
 import { LicensesModule } from './modules/files/licenses/licenses.module';
 import { HostingModule } from './modules/files/hosting/hosting.module';
+import { ProgramModule } from './modules/program/program.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { HostingModule } from './modules/files/hosting/hosting.module';
     TransactionModule,
     UserModule,
     DashboardModule,
+    ProgramModule,
 
     ContractsModule,
     SourceLinksModule,
