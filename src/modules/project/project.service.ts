@@ -31,6 +31,7 @@ export class ProjectService {
 
         const where: Prisma.ProjectWhereInput = {
             deletedAt: null,
+            ...(dto.customerId ? { customerId: dto.customerId } : {}),
         };
 
         if (status) where.status = status;
