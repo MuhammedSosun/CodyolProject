@@ -48,4 +48,10 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsUUID()
   customerId?: string | null;
+
+  // ✅ EKLENDİ: proje değiştirilebilir (null gönderilirse disconnect)
+  @ApiPropertyOptional({ example: 'project-uuid' })
+  @IsOptional()
+  @IsUUID()
+  projectId?: string | null;
 }

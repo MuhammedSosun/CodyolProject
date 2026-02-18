@@ -15,6 +15,18 @@ export class TaskResponseDto {
   @ApiProperty({ required: false })
   customerId?: string | null;
 
+  // ✅ EKLENDİ: Proje alanı
+  @ApiProperty({ required: false })
+  projectId?: string | null;
+
+  // ✅ EKLENDİ: Proje bilgisi (repo include ediyorsa gelir)
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    example: { id: 'project-uuid', name: 'CRM Projesi', status: 'ACTIVE' },
+  })
+  project?: { id: string; name: string; status: string } | null;
+
   @ApiProperty()
   title: string;
 

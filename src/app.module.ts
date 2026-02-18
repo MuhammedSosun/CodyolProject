@@ -22,6 +22,8 @@ import { SourceLinksModule } from './modules/files/source-links/source-links.mod
 import { LicensesModule } from './modules/files/licenses/licenses.module';
 import { HostingModule } from './modules/files/hosting/hosting.module';
 
+import { ProjectModule } from './modules/project/project.module';
+
 @Module({
   imports: [
     PrismaModule,
@@ -41,7 +43,9 @@ import { HostingModule } from './modules/files/hosting/hosting.module';
     ContractsModule,
     SourceLinksModule,
     LicensesModule,
-    HostingModule
+    HostingModule,
+
+    ProjectModule,
   ],
   providers: [
     {

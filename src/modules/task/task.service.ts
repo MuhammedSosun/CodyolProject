@@ -12,7 +12,7 @@ export class TaskService {
     private readonly repo: TaskRepository,
     private readonly prisma: PrismaService,
     private readonly activityService: ActivityService,
-  ) {}
+  ) { }
 
   // ✅ TASK CREATE
   async create(dto: CreateTaskDto, creatorUserId: string) {
@@ -20,8 +20,18 @@ export class TaskService {
     if (dto.customerId) {
       const customer = await this.prisma.customer.findFirst({
         where: { id: dto.customerId, deletedAt: null },
+        select: { id: true },
       });
       if (!customer) throw new NotFoundException('Customer not found');
+    }
+
+    // ✅ 1.1) project kontrolü (opsiyonel)
+    if (dto.projectId) {
+      const project = await this.prisma.project.findFirst({
+        where: { id: dto.projectId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!project) throw new NotFoundException('Project not found');
     }
 
     // 2) assignee user kontrolü
@@ -44,6 +54,9 @@ export class TaskService {
       assignedUserId: dto.assignedUserId,
       createdByUserId: creatorUserId,
       customerId: dto.customerId ?? null,
+
+      // ✅ projectId
+      projectId: dto.projectId ?? null,
     });
 
     // 4) activity log
@@ -88,6 +101,12 @@ export class TaskService {
     if (query.customerId) where.customerId = query.customerId;
     if (query.status) where.status = query.status;
 
+    // ✅ proje filtresi
+    if (query.projectId) where.projectId = query.projectId;
+
+    // ✅ atanan filtresi
+    if (query.assignedUserId) where.assignedUserId = query.assignedUserId;
+
     const items = await this.repo.list(where, (page - 1) * limit, limit);
 
     return {
@@ -106,6 +125,33 @@ export class TaskService {
       throw new NotFoundException('Task not found');
     }
 
+    // ✅ assignedUser değişecekse kontrol et
+    if (dto.assignedUserId) {
+      const assignee = await this.prisma.user.findFirst({
+        where: { id: dto.assignedUserId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!assignee) throw new NotFoundException('Assigned user not found');
+    }
+
+    // ✅ customer değişecekse kontrol et (null = disconnect)
+    if (dto.customerId) {
+      const customer = await this.prisma.customer.findFirst({
+        where: { id: dto.customerId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!customer) throw new NotFoundException('Customer not found');
+    }
+
+    // ✅ project değişecekse kontrol et (null = disconnect)
+    if (dto.projectId) {
+      const project = await this.prisma.project.findFirst({
+        where: { id: dto.projectId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!project) throw new NotFoundException('Project not found');
+    }
+
     const data: Prisma.TaskUpdateInput = {};
 
     if (dto.title !== undefined) data.title = dto.title;
@@ -115,14 +161,24 @@ export class TaskService {
     if (dto.endDate !== undefined)
       data.endDate = dto.endDate ? new Date(dto.endDate) : null;
 
-    // ✅ STATUS UPDATE (TYPE SAFE)
-    if (dto.status !== undefined) {
-      data.status = dto.status;
+    if (dto.status !== undefined) data.status = dto.status;
+
+    // ✅ atanan kullanıcı değişimi
+    if (dto.assignedUserId !== undefined) {
+      data.assignedUser = { connect: { id: dto.assignedUserId } };
     }
 
+    // ✅ customer connect/disconnect
     if (dto.customerId !== undefined) {
       data.customer = dto.customerId
         ? { connect: { id: dto.customerId } }
+        : { disconnect: true };
+    }
+
+    // ✅ project connect/disconnect
+    if (dto.projectId !== undefined) {
+      data.project = dto.projectId
+        ? { connect: { id: dto.projectId } }
         : { disconnect: true };
     }
 
@@ -174,17 +230,30 @@ export class TaskService {
       startDate: t.startDate,
       endDate: t.endDate,
       customerId: t.customerId,
+
+      // ✅ proje
+      projectId: t.projectId ?? null,
+
       assignedUserId: t.assignedUserId,
       createdByUserId: t.createdByUserId,
       createdAt: t.createdAt,
       updatedAt: t.updatedAt,
+
       customer: t.customer
         ? {
-            id: t.customer.id,
-            fullName: t.customer.fullName ?? t.customer.name ?? null,
-            email: t.customer.email ?? null,
-            phone: t.customer.phone ?? null,
-          }
+          id: t.customer.id,
+          fullName: t.customer.fullName ?? t.customer.name ?? null,
+          email: t.customer.email ?? null,
+          phone: t.customer.phone ?? null,
+        }
+        : null,
+
+      project: t.project
+        ? {
+          id: t.project.id,
+          name: t.project.name,
+          status: t.project.status,
+        }
         : null,
     };
   }

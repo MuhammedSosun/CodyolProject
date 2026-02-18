@@ -10,7 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -21,15 +21,16 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('api/tasks')
 export class TaskController {
-  constructor(private readonly service: TaskService) {}
+  constructor(private readonly service: TaskService) { }
 
   @Post()
   create(@Req() req, @Body() dto: CreateTaskDto) {
-    return this.service.create(dto, req.user.id); // req.user.id = creator (admin)
+    return this.service.create(dto, req.user.id);
   }
 
   @Get()
   list(@Req() req, @Query() query: any) {
+    // query: page, limit, status, customerId, projectId, assignedUserId
     return this.service.list(req.user.id, query);
   }
 
@@ -45,7 +46,6 @@ export class TaskController {
 
   @Delete(':id')
   delete(@Req() req, @Param('id') id: string) {
-    
     return this.service.delete(id, req.user.id);
   }
 }

@@ -24,6 +24,15 @@ export class CreateTaskDto {
   @IsUUID()
   customerId?: string;
 
+  // ✅ EKLENDİ: Proje seçimi
+  @ApiPropertyOptional({
+    example: 'project-uuid',
+    description: 'Görevin bağlı olduğu proje (opsiyonel)',
+  })
+  @IsOptional()
+  @IsUUID()
+  projectId?: string;
+
   @ApiProperty({ example: 'Teklif hazırlığı' })
   @IsString()
   @IsNotEmpty()
