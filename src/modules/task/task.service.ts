@@ -12,7 +12,7 @@ export class TaskService {
     private readonly repo: TaskRepository,
     private readonly prisma: PrismaService,
     private readonly activityService: ActivityService,
-  ) {}
+  ) { }
 
   // ✅ TASK CREATE
   async create(dto: CreateTaskDto, creatorUserId: string) {
@@ -22,6 +22,15 @@ export class TaskService {
         where: { id: dto.customerId, deletedAt: null },
       });
       if (!customer) throw new NotFoundException('Customer not found');
+    }
+
+    // ✅ project kontrolü (dto.projectId)
+    if (dto.projectId) {
+      const project = await this.prisma.project.findFirst({
+        where: { id: dto.projectId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!project) throw new NotFoundException('Project not found');
     }
 
     // 2) assignee user kontrolü
@@ -44,6 +53,9 @@ export class TaskService {
       assignedUserId: dto.assignedUserId,
       createdByUserId: creatorUserId,
       customerId: dto.customerId ?? null,
+
+      // ✅ projectId (dto.projectId)
+      projectId: dto.projectId ?? null,
     });
 
     // 4) activity log
@@ -88,6 +100,12 @@ export class TaskService {
     if (query.customerId) where.customerId = query.customerId;
     if (query.status) where.status = query.status;
 
+    // ✅ proje bazlı filtre
+    if (query.projectId) where.projectId = query.projectId;
+
+    // ✅ çalışan bazlı filtre
+    if (query.assignedUserId) where.assignedUserId = query.assignedUserId;
+
     const items = await this.repo.list(where, (page - 1) * limit, limit);
 
     return {
@@ -123,6 +141,13 @@ export class TaskService {
     if (dto.customerId !== undefined) {
       data.customer = dto.customerId
         ? { connect: { id: dto.customerId } }
+        : { disconnect: true };
+    }
+
+    // ✅ project update (dto.projectId)
+    if (dto.projectId !== undefined) {
+      data.project = dto.projectId
+        ? { connect: { id: dto.projectId } }
         : { disconnect: true };
     }
 
@@ -173,18 +198,29 @@ export class TaskService {
       status: t.status,
       startDate: t.startDate,
       endDate: t.endDate,
+
       customerId: t.customerId,
+
+      // ✅ project bilgileri
+      projectId: t.projectId ?? null,
+      project: t.project
+        ? {
+          id: t.project.id,
+          name: t.project.name,
+        }
+        : null,
+
       assignedUserId: t.assignedUserId,
       createdByUserId: t.createdByUserId,
       createdAt: t.createdAt,
       updatedAt: t.updatedAt,
       customer: t.customer
         ? {
-            id: t.customer.id,
-            fullName: t.customer.fullName ?? t.customer.name ?? null,
-            email: t.customer.email ?? null,
-            phone: t.customer.phone ?? null,
-          }
+          id: t.customer.id,
+          fullName: t.customer.fullName ?? (t.customer as any).name ?? null,
+          email: t.customer.email ?? null,
+          phone: t.customer.phone ?? null,
+        }
         : null,
     };
   }

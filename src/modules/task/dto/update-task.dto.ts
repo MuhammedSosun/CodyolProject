@@ -27,7 +27,6 @@ export class UpdateTaskDto {
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
-  // 🔹 YENİ (UI kolonları)
   @ApiPropertyOptional({ example: '2025-01-10' })
   @IsOptional()
   @IsDateString()
@@ -38,7 +37,6 @@ export class UpdateTaskDto {
   @IsDateString()
   endDate?: string;
 
-  // 🔹 YENİ (atanan kullanıcı değiştirilebilir)
   @ApiPropertyOptional({ example: 'user-uuid' })
   @IsOptional()
   @IsUUID()
@@ -48,4 +46,11 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsUUID()
   customerId?: string | null;
+
+  // ✅ FIX: project cuid olduğu için UUID değil
+  @ApiPropertyOptional({ example: 'project-cuid' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  projectId?: string | null;
 }

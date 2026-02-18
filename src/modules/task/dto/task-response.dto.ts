@@ -5,7 +5,6 @@ export class TaskResponseDto {
   @ApiProperty()
   id: string;
 
-  // 🔹 YENİ (Task her zaman bir kullanıcıya atanır)
   @ApiProperty()
   assignedUserId: string;
 
@@ -14,6 +13,12 @@ export class TaskResponseDto {
 
   @ApiProperty({ required: false })
   customerId?: string | null;
+
+  @ApiProperty({ required: false })
+  projectId?: string | null;
+
+  @ApiProperty({ required: false, type: Object })
+  project?: { id: string; name: string } | null;
 
   @ApiProperty()
   title: string;
@@ -24,7 +29,6 @@ export class TaskResponseDto {
   @ApiProperty({ enum: TaskStatus })
   status: TaskStatus;
 
-  // 🔹 YENİ (UI kolonları)
   @ApiProperty({ required: false })
   startDate?: Date | null;
 

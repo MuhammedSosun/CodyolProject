@@ -11,7 +11,6 @@ import {
 import { TaskStatus } from '../enums/task-status.enum';
 
 export class CreateTaskDto {
-  // ✅ Admin kimi seçecekse o
   @ApiProperty({
     example: 'user-uuid',
     description: 'Görevin atanacağı kullanıcı',
@@ -23,6 +22,13 @@ export class CreateTaskDto {
   @IsOptional()
   @IsUUID()
   customerId?: string;
+
+  // ✅ FIX: Project.id = cuid() olduğu için UUID değil
+  @ApiPropertyOptional({ example: 'project-cuid' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  projectId?: string;
 
   @ApiProperty({ example: 'Teklif hazırlığı' })
   @IsString()

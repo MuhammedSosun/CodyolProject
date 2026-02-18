@@ -9,57 +9,34 @@ export class ContractsService {
   constructor(private readonly repo: ContractsRepository) { }
 
   async create(userId: string, dto: CreateContractDto, file?: Express.Multer.File) {
-    console.log("=== CONTRACT CREATE START ===");
-    console.log("userId:", userId);
-    console.log("dto:", dto);
-    console.log("file exists?:", !!file);
-
-    if (file) {
-      console.log("file.originalname:", file.originalname);
-      console.log("file.mimetype:", file.mimetype);
-      console.log("file.size:", file.size);
-      console.log("file.filename:", (file as any).filename);
-      console.log("file.path:", (file as any).path);
-    } else {
-      console.log("⚠️ FILE IS UNDEFINED");
-    }
-
     const data: any = {
       createdByUser: { connect: { id: userId } },
       title: dto.title,
-      status: dto.status ?? ('ACTIVE' as any),
+      status: (dto.status ?? 'ACTIVE') as any,
       description: dto.description ?? null,
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
     };
 
+    // customer connect
     if (dto.customerId) {
-      console.log("Connecting customer:", dto.customerId);
       data.customer = { connect: { id: dto.customerId } };
     }
 
+    // ✅ fileUrl üret (upload varsa kesin onu kullan)
     const fileUrl = this.resolveFileUrl(dto, file);
-
-    console.log("Generated fileUrl:", fileUrl);
-
     if (fileUrl) data.fileUrl = fileUrl;
 
+    // file meta
     if (file) {
       data.fileName = file.originalname ?? null;
       data.mimeType = file.mimetype ?? null;
       data.size = typeof file.size === 'number' ? file.size : null;
     }
 
-    console.log("Final Prisma data:", JSON.stringify(data, null, 2));
-
     const item = await this.repo.create(data);
-
-    console.log("Saved item:", item);
-    console.log("=== CONTRACT CREATE END ===");
-
     return this.toResponse(item);
   }
-
 
   async list(userId: string, query: ContractListQueryDto) {
     const page = query.page ?? 1;
@@ -71,9 +48,9 @@ export class ContractsService {
     if (query.q) where.title = { contains: query.q, mode: 'insensitive' };
 
     if (query.customerId) {
-      // customer relation varsa:
+      // relation varsa:
       where.customer = { is: { id: query.customerId } };
-      // eğer schema’da direkt customerId varsa bunun yerine:
+      // eğer schema’da direkt customerId varsa:
       // where.customerId = query.customerId;
     }
 
@@ -98,7 +75,6 @@ export class ContractsService {
     if (dto.status !== undefined) patch.status = dto.status as any;
 
     if (dto.description !== undefined) patch.description = dto.description ?? null;
-
     if (dto.startDate !== undefined) patch.startDate = dto.startDate ? new Date(dto.startDate) : null;
     if (dto.endDate !== undefined) patch.endDate = dto.endDate ? new Date(dto.endDate) : null;
 
@@ -109,10 +85,16 @@ export class ContractsService {
       else patch.customer = { disconnect: true };
     }
 
-    // fileUrl: dto.fileUrl varsa onu, yoksa file varsa upload url üret
+    // ✅ fileUrl: upload varsa kesin onu kullan. upload yoksa dto.fileUrl sadece gerçek URL ise kabul et.
     const fileUrl = this.resolveFileUrl(dto, file);
-    if (fileUrl !== undefined) patch.fileUrl = fileUrl ?? null;
+    if (fileUrl !== undefined) {
+      // undefined => dokunma
+      // string => set et
+      // null => sil (burada null dönmüyoruz)
+      patch.fileUrl = fileUrl ?? null;
+    }
 
+    // file meta (sadece upload gelirse güncelle)
     if (file) {
       patch.fileName = file.originalname ?? null;
       patch.mimeType = file.mimetype ?? null;
@@ -167,33 +149,32 @@ export class ContractsService {
     };
   }
 
+  /**
+   * ✅ KURAL:
+   * - Upload (file) geldiyse HER ZAMAN uploads path üret
+   * - Upload yoksa dto.fileUrl sadece gerçek http/https ise kabul et
+   * - Sadece "abc.pdf" gibi filename gelirse kabul ETME (invalid URL üretir)
+   *
+   * Return:
+   * - string  => set edilebilir
+   * - undefined => hiç dokunma
+   */
   private resolveFileUrl(dto: { fileUrl?: string }, file?: Express.Multer.File): string | undefined {
-    console.log("resolveFileUrl called");
-    console.log("dto.fileUrl:", dto?.fileUrl);
-
-    if (dto?.fileUrl) {
-      console.log("Using dto.fileUrl");
-      return dto.fileUrl;
+    // ✅ Upload geldiyse kesin path
+    if (file && (file as any).filename) {
+      const rel = `/uploads/contracts/${(file as any).filename}`;
+      const base = process.env.FILE_BASE_URL; // optional
+      return base ? `${base}${rel}` : rel;
     }
 
-    if (!file) {
-      console.log("No file provided, returning undefined");
-      return undefined;
-    }
+    // Upload yoksa dto.fileUrl opsiyonel
+    const raw = (dto?.fileUrl ?? '').trim();
+    if (!raw) return undefined;
 
-    console.log("File filename:", (file as any).filename);
+    // sadece gerçek url ise kabul
+    if (/^https?:\/\//i.test(raw)) return raw;
 
-    const rel = `/uploads/contracts/${(file as any).filename}`;
-    const base = process.env.FILE_BASE_URL;
-
-    console.log("Base URL:", base);
-    console.log("Relative path:", rel);
-
-    const finalUrl = base ? `${base}${rel}` : rel;
-
-    console.log("Final URL:", finalUrl);
-
-    return finalUrl;
+    // filename veya relative gibi şeyleri ignore et
+    return undefined;
   }
-
 }
