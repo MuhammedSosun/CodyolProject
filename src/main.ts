@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 import 'dotenv/config';
 
 async function bootstrap() {
@@ -14,11 +15,17 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // ✅ uploads klasörünü /uploads altında statik servis et
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
-  });
+  // ✅ uploads klasörü yoksa oluştur (prod/dev güvenli)
+  const uploadsPath = join(process.cwd(), 'uploads');
+  if (!existsSync(uploadsPath)) {
+    mkdirSync(uploadsPath, { recursive: true });
+  }
 
+  // ✅ uploads klasörünü /uploads altında statik servis et
+  // ⚠️ prefix sonunda "/" OLMASIN
+  app.useStaticAssets(uploadsPath, {
+    prefix: '/uploads',
+  });
 
   // ✅ Request logger
   app.use((req, res, next) => {
