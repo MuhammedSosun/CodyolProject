@@ -17,6 +17,18 @@ export class CustomerResponseDto {
     @ApiProperty({ required: false })
     companyName?: string | null;
 
+    @ApiProperty({ required: false })
+    vatNumber?: string | null;
+
+    @ApiProperty({ required: false })
+    taxOffice?: string | null;
+
+    @ApiProperty({ required: false })
+    bankName?: string | null;
+
+    @ApiProperty({ required: false })
+    iban?: string | null;
+
     @ApiProperty()
     status: CustomerStatus;
 

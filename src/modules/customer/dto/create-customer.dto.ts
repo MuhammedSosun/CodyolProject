@@ -32,11 +32,25 @@ phone?: string;
     @IsString()
     companyName?: string;
 
+    @ApiPropertyOptional()
     @IsOptional()
-@Matches(/^\d{10}$/, {
-  message: 'Vergi numarası 10 haneli olmalıdır'
-})
-vatNumber?: string;
+    @IsString()
+    vatNumber?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    taxOffice?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    bankName?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    iban?: string;
 
    
 

@@ -49,6 +49,9 @@ model Customer {
   phone        String?
   companyName  String?
   vatNumber    String?
+  taxOffice    String?
+  bankName     String?
+  iban         String?
   website      String?
   address      String?
   description  String?
