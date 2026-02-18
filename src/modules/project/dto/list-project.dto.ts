@@ -10,4 +10,8 @@ export class ListProjectDto {
   @IsOptional()
   @IsString()
   q?: string;
+
+  @IsOptional() // ✅ Müşteri bazlı filtreleme için eklendi
+  @IsString()
+  customerId?: string;
 }
