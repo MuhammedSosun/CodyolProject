@@ -82,9 +82,13 @@ export class AuthService {
     return user;
   }
 
-  async refresh(dto: RefreshTokenDto) {
+  async refresh(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token missing');
+    }
+
     const token = await this.prisma.refreshToken.findUnique({
-      where: { refreshToken: dto.refreshToken },
+      where: { refreshToken },
       include: { user: true },
     });
 
@@ -96,7 +100,7 @@ export class AuthService {
       accessToken: this.createAccessToken({
         id: token.user.id,
         username: token.user.username,
-        email: token.user.email, // JWT'ye email ekledik
+        email: token.user.email,
         role: token.user.role,
       }),
       refreshToken: await this.createRefreshToken(token.user.id),
@@ -109,30 +113,31 @@ export class AuthService {
   }
 
   private createAccessToken(user: {
-  id: string;
-  username: string;
-  email: string;
-  role: Role;
-}) {
-  return this.jwt.sign(
-    {
-      sub: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-    },
-    { expiresIn: '2h' },
-  );
-}
+    id: string;
+    username: string;
+    email: string;
+    role: Role;
+  }) {
+    return this.jwt.sign(
+      {
+        sub: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+      { expiresIn: '15m' },
+    );
+  }
 
   private async createRefreshToken(userId: string) {
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
 
     const token = randomUUID();
+
     await this.prisma.refreshToken.create({
       data: {
         refreshToken: token,
-        expiredAt: new Date(Date.now() + 1000 * 60 * 60 * 4),
+        expiredAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 gün
         userId,
       },
     });

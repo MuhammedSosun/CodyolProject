@@ -7,19 +7,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
 
 @Module({
-    imports: [
-        PassportModule,
-        JwtModule.register({
-            secret: process.env.JWT_SECRET,
-            signOptions: { expiresIn: '1h' },
-        }),
-    ],
-    controllers: [AuthController], // 👈 KRAL SATIR
-    providers: [
-        AuthService,
-        JwtStrategy,
-        RefreshStrategy,
-    ],
-    exports: [AuthService],
+  imports: [
+    PassportModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+    }),
+  ],
+  controllers: [AuthController], // 👈 KRAL SATIR
+  providers: [AuthService, JwtStrategy, RefreshStrategy],
+  exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

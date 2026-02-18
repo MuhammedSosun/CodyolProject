@@ -6,9 +6,13 @@ import { ContractListQueryDto } from './dto/contract-list-query.dto';
 
 @Injectable()
 export class ContractsService {
-  constructor(private readonly repo: ContractsRepository) { }
+  constructor(private readonly repo: ContractsRepository) {}
 
-  async create(userId: string, dto: CreateContractDto, file?: Express.Multer.File) {
+  async create(
+    userId: string,
+    dto: CreateContractDto,
+    file?: Express.Multer.File,
+  ) {
     const data: any = {
       createdByUser: { connect: { id: userId } },
       title: dto.title,
@@ -63,20 +67,32 @@ export class ContractsService {
   }
 
   async getById(userId: string, id: string) {
-    const item = await this.repo.findFirst({ id, createdByUserId: userId, deletedAt: null });
+    const item = await this.repo.findFirst({
+      id,
+      createdByUserId: userId,
+      deletedAt: null,
+    });
     if (!item) throw new NotFoundException('Contract not found');
     return this.toResponse(item);
   }
 
-  async update(userId: string, id: string, dto: UpdateContractDto, file?: Express.Multer.File) {
+  async update(
+    userId: string,
+    id: string,
+    dto: UpdateContractDto,
+    file?: Express.Multer.File,
+  ) {
     const patch: any = {};
 
     if (dto.title !== undefined) patch.title = dto.title;
     if (dto.status !== undefined) patch.status = dto.status as any;
 
-    if (dto.description !== undefined) patch.description = dto.description ?? null;
-    if (dto.startDate !== undefined) patch.startDate = dto.startDate ? new Date(dto.startDate) : null;
-    if (dto.endDate !== undefined) patch.endDate = dto.endDate ? new Date(dto.endDate) : null;
+    if (dto.description !== undefined)
+      patch.description = dto.description ?? null;
+    if (dto.startDate !== undefined)
+      patch.startDate = dto.startDate ? new Date(dto.startDate) : null;
+    if (dto.endDate !== undefined)
+      patch.endDate = dto.endDate ? new Date(dto.endDate) : null;
 
     // customer connect/disconnect
     if (dto.customerId !== undefined) {
@@ -128,10 +144,10 @@ export class ContractsService {
       customerId: x.customerId ?? x.customer?.id ?? null,
       customer: x.customer
         ? {
-          id: x.customer.id,
-          fullName: x.customer.fullName,
-          companyName: x.customer.companyName ?? null,
-        }
+            id: x.customer.id,
+            fullName: x.customer.fullName,
+            companyName: x.customer.companyName ?? null,
+          }
         : null,
 
       description: x.description ?? null,
@@ -159,7 +175,10 @@ export class ContractsService {
    * - string  => set edilebilir
    * - undefined => hiç dokunma
    */
-  private resolveFileUrl(dto: { fileUrl?: string }, file?: Express.Multer.File): string | undefined {
+  private resolveFileUrl(
+    dto: { fileUrl?: string },
+    file?: Express.Multer.File,
+  ): string | undefined {
     // ✅ Upload geldiyse kesin path
     if (file && (file as any).filename) {
       const rel = `/uploads/contracts/${(file as any).filename}`;
