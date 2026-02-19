@@ -24,7 +24,7 @@ import { MoveCardDto } from './dto/move-card.dto';
 @ApiTags('Programs')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
-@Controller('programs')
+@Controller('api/programs')
 export class ProgramController {
   constructor(private readonly service: ProgramService) {}
 

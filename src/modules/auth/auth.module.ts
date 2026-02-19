@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
+import { MembershipRequestsController } from './member-ship-request/membership-requests.controller';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { RefreshStrategy } from './strategies/refresh.strategy';
       secret: process.env.JWT_SECRET,
     }),
   ],
-  controllers: [AuthController], // 👈 KRAL SATIR
+  controllers: [AuthController, MembershipRequestsController], // 👈 KRAL SATIR
   providers: [AuthService, JwtStrategy, RefreshStrategy],
   exports: [AuthService],
 })
