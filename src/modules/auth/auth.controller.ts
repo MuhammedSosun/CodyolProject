@@ -82,11 +82,4 @@ export class AuthController {
   me(@Req() req) {
     return this.authService.me(req.user.id);
   }
-
-  // 🔹 ADMIN TEST
-  @Roles(Role.ADMIN)
-  @Get('admin')
-  adminOnly() {
-    return 'ADMIN girebildi';
-  }
 }

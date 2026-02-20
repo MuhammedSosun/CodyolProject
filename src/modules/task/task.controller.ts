@@ -15,10 +15,14 @@ import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Role } from '@prisma/client';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('Task')
 @ApiBearerAuth('JWT-auth')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @Controller('api/tasks')
 export class TaskController {
   constructor(private readonly service: TaskService) {}
@@ -45,7 +49,6 @@ export class TaskController {
 
   @Delete(':id')
   delete(@Req() req, @Param('id') id: string) {
-    
     return this.service.delete(id, req.user.id);
   }
 }

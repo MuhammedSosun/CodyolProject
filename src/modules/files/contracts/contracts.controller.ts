@@ -9,20 +9,32 @@ import {
   Query,
   Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ContractsService } from './contracts.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
 import { ContractListQueryDto } from './dto/contract-list-query.dto';
 import { ContractFileUploadInterceptor } from '../../../common/interceptors/contract-file-upload.interceptor';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Files - Contracts')
 @Controller('api/files/contracts')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 export class ContractsController {
-  constructor(private readonly service: ContractsService) { }
+  constructor(private readonly service: ContractsService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create contract file' })
@@ -33,8 +45,6 @@ export class ContractsController {
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: CreateContractDto,
   ) {
-    console.log("FILE:", file);
-    console.log("BODY:", dto);
     return this.service.create(req.user.id, dto, file);
   }
 

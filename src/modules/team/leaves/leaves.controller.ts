@@ -1,51 +1,68 @@
-import { Controller, Get, Patch, Param,Body, Post,Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Body,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { LeavesService } from './leaves.service';
-import { mapLeaveToPendingUI } from './leaves.mapper';
-import { mapLeaveToCalendar } from './leaves.mapper';
-
+import { mapLeaveToPendingUI, mapLeaveToCalendar } from './leaves.mapper';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('api/teams/leaves')
-
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class LeavesController {
   constructor(private readonly leavesService: LeavesService) {}
 
-//Userın izin oluştrurması
-@Post()
-create(@Req() req, @Body() data) {
-  return this.leavesService.create({
-    ...data,
-    employee: req.user.username, // 🔥 ASIL OLAY
-  });
-}
-
-  // userın kendi izinleri
-  @Get('my')
-  getMyLeaves(@Req() req) {
-    const username = req.user.username;
-    return this.leavesService.findByUser(username);
+  // 🟢 USER → izin oluşturur
+  @Post()
+  @Roles(Role.USER)
+  create(@Req() req, @Body() data) {
+    return this.leavesService.create({
+      ...data,
+      employee: req.user.username,
+    });
   }
 
-  // GET /teams/leaves/pending
- @Get('pending')
-async getPending() {
-  const leaves = await this.leavesService.findPending();
-  return leaves.map(mapLeaveToPendingUI);
-}
+  // 🟢 USER → kendi izinleri
+  @Get('my')
+  @Roles(Role.USER)
+  getMyLeaves(@Req() req) {
+    return this.leavesService.findByUser(req.user.username);
+  }
 
-  // GET /teams/leaves/approved
+  // 🔴 ADMIN & SUPER_ADMIN → pending
+  @Get('pending')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  async getPending() {
+    const leaves = await this.leavesService.findPending();
+    return leaves.map(mapLeaveToPendingUI);
+  }
+
+  // 🔴 ADMIN & SUPER_ADMIN → approved
   @Get('approved')
-async getApproved() {
-  const leaves = await this.leavesService.findApproved();
-  return leaves.map(mapLeaveToCalendar);
-}
-  // PATCH /teams/leaves/:id/approve
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  async getApproved() {
+    const leaves = await this.leavesService.findApproved();
+    return leaves.map(mapLeaveToCalendar);
+  }
+
+  // 🔴 ADMIN & SUPER_ADMIN → approve
   @Patch(':id/approve')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   approve(@Param('id') id: string) {
     return this.leavesService.approve(+id);
   }
 
-  // PATCH /teams/leaves/:id/reject
+  // 🔴 ADMIN & SUPER_ADMIN → reject
   @Patch(':id/reject')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   reject(@Param('id') id: string) {
     return this.leavesService.reject(+id);
   }

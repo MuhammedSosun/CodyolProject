@@ -16,10 +16,14 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionListQueryDto } from './dto/transaction-list-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Role } from '@prisma/client';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('Transactions')
 @ApiBearerAuth('JWT-auth')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @Controller('api/transactions')
 export class TransactionController {
   constructor(private readonly service: TransactionService) {}

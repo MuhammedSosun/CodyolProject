@@ -13,21 +13,21 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
   ) {}
-  
+
   async onModuleInit() {
     await this.seedAdmin();
   }
   async seedAdmin() {
     const adminEmail = 'admin@codyol.com'; // Burayı kendi mailin yapabilirsin
-    
+
     // 1. Admin var mı kontrol et
     const adminExists = await this.prisma.user.findFirst({
-      where: { role: Role.ADMIN },
+      where: { role: Role.SUPER_ADMIN },
     });
 
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash('admin123', 10); // Güçlü bir şifre seç
-      
+
       await this.prisma.user.create({
         data: {
           username: 'admin',
@@ -37,8 +37,10 @@ export class AuthService {
           status: UserStatus.APPROVED, // Admin otomatik onaylı olur
         },
       });
-      
-      console.log('✅ EFSANE: SUPER_ADMIN hesabı başarıyla oluşturuldu!: admin@codyol.com / admin123');
+
+      console.log(
+        '✅ EFSANE: SUPER_ADMIN hesabı başarıyla oluşturuldu!: admin@codyol.com / admin123',
+      );
     } else {
       console.log('ℹ️ SUPER_Admin hesabı zaten mevcut, seeding atlandı.');
     }
@@ -59,11 +61,12 @@ export class AuthService {
 
     // Kullanıcıya onay beklediğine dair bilgi veriyoruz (Token dönmüyoruz)
     return {
-      message: "Kaydınız başarıyla oluşturuldu. Giriş yapabilmek için admin onayı bekleniyor.",
-      userId: user.id
+      message:
+        'Kaydınız başarıyla oluşturuldu. Giriş yapabilmek için admin onayı bekleniyor.',
+      userId: user.id,
     };
   }
-  
+
   // 🔹 GİRİŞ (LOGIN)
   async authenticate(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -77,7 +80,9 @@ export class AuthService {
 
     // 2. 🟢 ONAY KONTROLÜ (Kritik Nokta)
     if (user.status === UserStatus.PENDING) {
-      throw new UnauthorizedException('Hesabınız henüz onaylanmamış. Lütfen admin onayını bekleyin.');
+      throw new UnauthorizedException(
+        'Hesabınız henüz onaylanmamış. Lütfen admin onayını bekleyin.',
+      );
     }
 
     if (user.status === UserStatus.REJECTED) {
@@ -86,7 +91,8 @@ export class AuthService {
 
     // 3. Şifre eşleşme kontrolü
     const match = await bcrypt.compare(dto.password, user.password);
-    if (!match) throw new UnauthorizedException('Geçersiz kullanıcı adı veya şifre');
+    if (!match)
+      throw new UnauthorizedException('Geçersiz kullanıcı adı veya şifre');
 
     // Her şey tamamsa tokenları üret
     return {
@@ -157,7 +163,12 @@ export class AuthService {
   }
 
   // 🔹 TOKEN ÜRETİMİ (Private Methods)
-  private createAccessToken(user: { id: string; username: string; email: string; role: Role }) {
+  private createAccessToken(user: {
+    id: string;
+    username: string;
+    email: string;
+    role: Role;
+  }) {
     return this.jwt.sign(
       {
         sub: user.id,

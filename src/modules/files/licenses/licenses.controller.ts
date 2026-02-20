@@ -1,17 +1,32 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { LicensesService } from './licenses.service';
 import { CreateLicenseDto } from './dto/create-license.dto';
 import { UpdateLicenseDto } from './dto/update-license.dto';
 import { LicenseListQueryDto } from './dto/license-list-query.dto';
+import { Roles } from 'src/modules/auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
+import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Files - Licenses')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @Controller('api/files/licenses')
 export class LicensesController {
-  constructor(private readonly service: LicensesService) { }
+  constructor(private readonly service: LicensesService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create license' })

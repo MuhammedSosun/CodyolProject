@@ -16,11 +16,16 @@ import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 import { ActivityListQueryDto } from './dto/activity-list-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Activity')
 @UseGuards(JwtAuthGuard)
 @Controller('api/activities')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 export class ActivityController {
   constructor(private readonly service: ActivityService) {}
 

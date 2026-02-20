@@ -19,10 +19,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { Public } from '../auth/decorators/public.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('Customer')
 @ApiBearerAuth('JWT-auth')
 @Controller('api/customers')
+@Roles(Role.SUPER_ADMIN, Role.ADMIN)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CustomerController {
   constructor(private readonly service: CustomerService) {}
 

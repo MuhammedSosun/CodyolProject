@@ -1,17 +1,32 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { HostingService } from './hosting.service';
 import { CreateHostingDto } from './dto/create-hosting.dto';
 import { UpdateHostingDto } from './dto/update-hosting.dto';
 import { HostingListQueryDto } from './dto/hosting-list-query.dto';
+import { Role } from '@prisma/client';
+import { Roles } from 'src/modules/auth/decorators/roles.decorator';
+import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Files - Hosting')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @Controller('api/files/hosting')
 export class HostingController {
-  constructor(private readonly service: HostingService) { }
+  constructor(private readonly service: HostingService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create hosting info' })

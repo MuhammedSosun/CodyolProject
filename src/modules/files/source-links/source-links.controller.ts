@@ -1,15 +1,32 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SourceLinksService } from './source-links.service';
 import { CreateSourceLinkDto } from './dto/create-source-link.dto';
 import { UpdateSourceLinkDto } from './dto/update-source-link.dto';
 import { SourceLinkListQueryDto } from './dto/source-link-list-query.dto';
+import { Role } from '@prisma/client';
+import { Roles } from 'src/modules/auth/decorators/roles.decorator';
+import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
+import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 
 @ApiBearerAuth('JWT-auth')
 @ApiTags('Files - Source Links')
 @Controller('api/files/source-links')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 export class SourceLinksController {
-  constructor(private readonly service: SourceLinksService) { }
+  constructor(private readonly service: SourceLinksService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create source link' })
@@ -31,7 +48,11 @@ export class SourceLinksController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update source link' })
-  update(@Req() req, @Param('id') id: string, @Body() dto: UpdateSourceLinkDto) {
+  update(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateSourceLinkDto,
+  ) {
     return this.service.update(req.user.id, id, dto);
   }
 

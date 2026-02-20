@@ -13,12 +13,11 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
-    // Endpoint role istemiyorsa geç
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
@@ -26,8 +25,8 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || !user.role) {
-      throw new ForbiddenException('Role bilgisi yok');
+    if (!user) {
+      throw new ForbiddenException('Authentication gerekli');
     }
 
     if (!requiredRoles.includes(user.role)) {
