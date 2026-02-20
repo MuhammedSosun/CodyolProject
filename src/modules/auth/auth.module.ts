@@ -5,21 +5,17 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshStrategy } from './strategies/refresh.strategy';
+import { MembershipRequestsController } from './member-ship-request/membership-requests.controller';
 
 @Module({
-    imports: [
-        PassportModule,
-        JwtModule.register({
-            secret: process.env.JWT_SECRET,
-            signOptions: { expiresIn: '1h' },
-        }),
-    ],
-    controllers: [AuthController], // 👈 KRAL SATIR
-    providers: [
-        AuthService,
-        JwtStrategy,
-        RefreshStrategy,
-    ],
-    exports: [AuthService],
+  imports: [
+    PassportModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+    }),
+  ],
+  controllers: [AuthController, MembershipRequestsController], // 👈 KRAL SATIR
+  providers: [AuthService, JwtStrategy, RefreshStrategy],
+  exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}
