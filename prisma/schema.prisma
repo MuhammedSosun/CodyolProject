@@ -13,7 +13,7 @@ model User {
   email                String           @unique
   password             String
   role                 Role             @default(USER)
-  status    UserStatus @default(PENDING) // Yeni kayıtlar buraya düşer
+  status               UserStatus       @default(PENDING) // Yeni kayıtlar buraya düşer
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   deletedAt            DateTime?
@@ -33,11 +33,13 @@ model User {
   assignedProgramCards ProgramCard[]    @relation("ProgramCardAssignee")
   programPlans         ProgramPlan[]    @relation("UserProgramPlans")
 }
+
 enum UserStatus {
-  PENDING   // Onay bekliyor
-  APPROVED  // Giriş yapabilir
-  REJECTED  // Reddedildi
-} 
+  PENDING // Onay bekliyor
+  APPROVED // Giriş yapabilir
+  REJECTED // Reddedildi
+}
+
 model RefreshToken {
   id           String   @id @default(uuid())
   refreshToken String   @unique
