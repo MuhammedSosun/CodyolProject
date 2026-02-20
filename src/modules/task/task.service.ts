@@ -5,6 +5,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { ActivityType, Prisma } from '@prisma/client';
 import { ActivityService } from '../activity/activity.service';
+import { TaskStatus } from './enums/task-status.enum';
 
 @Injectable()
 export class TaskService {
@@ -224,4 +225,99 @@ export class TaskService {
         : null,
     };
   }
+  async getTeamProgress(creatorUserId: string, query: any) {
+    const limit = Number(query.limit ?? 4);
+
+    // 1) Toplam task sayısı (assignee bazlı)
+    const totals = await this.prisma.task.groupBy({
+      by: ['assignedUserId'],
+      where: {
+        deletedAt: null,
+        createdByUserId: creatorUserId, // admin’in atadığı task’lar
+        assignedUserId: { not: undefined },
+      },
+      _count: { _all: true },
+    });
+
+    // 2) Tamamlanan task sayısı
+    const completed = await this.prisma.task.groupBy({
+      by: ['assignedUserId'],
+      where: {
+        deletedAt: null,
+        createdByUserId: creatorUserId,
+        assignedUserId: { not: undefined },
+        status: TaskStatus.COMPLETED,
+      },
+      _count: { _all: true },
+    });
+
+    // 3) Map (userId -> count)
+    const totalMap = new Map<string, number>();
+    totals.forEach((x: any) => totalMap.set(x.assignedUserId, x._count._all));
+
+    const doneMap = new Map<string, number>();
+    completed.forEach((x: any) => doneMap.set(x.assignedUserId, x._count._all));
+
+    // 4) En çok task’ı olanlardan seç (limit kadar)
+    const rows = [...totalMap.entries()]
+      .map(([userId, total]) => ({
+        userId,
+        total,
+        done: doneMap.get(userId) ?? 0,
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, limit);
+
+    const userIds = rows.map((r) => r.userId);
+
+    // 5) Kullanıcı + profile bilgileri
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: userIds }, deletedAt: null },
+      select: {
+        id: true,
+        username: true,
+        profile: {
+          select: {
+            firstName: true,
+            lastName: true,
+            position: true,
+            department: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    const userMap = new Map(users.map((u) => [u.id, u]));
+    const colors = ['#E92B63', '#3B82F6', '#F59E0B', '#10B981'];
+
+    return {
+      items: rows.map((r, idx) => {
+        const u: any = userMap.get(r.userId);
+
+        const fullName = [u?.profile?.firstName, u?.profile?.lastName]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+
+        const name = fullName || u?.username || '—';
+        const position = u?.profile?.position || u?.profile?.department || '—';
+        const thumbnail = u?.profile?.avatarUrl || null;
+
+        const progress = r.total === 0 ? 0 : Math.round((r.done / r.total) * 100);
+
+        return {
+          id: r.userId,
+          name,
+          position,
+          progress,
+          done: r.done,
+          total: r.total,
+          color: colors[idx % colors.length],
+          thumbnail,
+        };
+      }),
+    };
+  }
+
 }

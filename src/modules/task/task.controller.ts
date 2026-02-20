@@ -21,11 +21,15 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('api/tasks')
 export class TaskController {
-  constructor(private readonly service: TaskService) {}
+  constructor(private readonly service: TaskService) { }
 
   @Post()
   create(@Req() req, @Body() dto: CreateTaskDto) {
     return this.service.create(dto, req.user.id); // req.user.id = creator (admin)
+  }
+  @Get('team-progress')
+  getTeamProgress(@Req() req, @Query() query: any) {
+    return this.service.getTeamProgress(req.user.id, query);
   }
 
   @Get()
@@ -45,7 +49,7 @@ export class TaskController {
 
   @Delete(':id')
   delete(@Req() req, @Param('id') id: string) {
-    
+
     return this.service.delete(id, req.user.id);
   }
 }
