@@ -25,11 +25,15 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 @Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @Controller('api/tasks')
 export class TaskController {
-  constructor(private readonly service: TaskService) {}
+  constructor(private readonly service: TaskService) { }
 
   @Post()
   create(@Req() req, @Body() dto: CreateTaskDto) {
     return this.service.create(dto, req.user.id); // req.user.id = creator (admin)
+  }
+  @Get('team-progress')
+  getTeamProgress(@Req() req, @Query() query: any) {
+    return this.service.getTeamProgress(req.user.id, query);
   }
 
   @Get()
