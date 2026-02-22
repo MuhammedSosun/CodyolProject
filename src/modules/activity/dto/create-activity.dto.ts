@@ -5,29 +5,29 @@ import { ActivityType } from '@prisma/client';
 export class CreateActivityDto {
 
 
-    @ApiPropertyOptional({ example: 'customer-uuid' })
-    @IsOptional()
-    @IsUUID()
-    customerId?: string;
+  @ApiPropertyOptional({ example: 'customer-uuid' })
+  @IsOptional()
+  @IsUUID()
+  customerId?: string;
 
-    @ApiPropertyOptional({ example: 'task-uuid' })
-    @IsOptional()
-    @IsUUID()
-    taskId?: string;
+  @ApiPropertyOptional({ example: 'task-uuid' })
+  @IsOptional()
+  @IsUUID()
+  taskId?: string;
 
-    @ApiProperty({ enum: ActivityType, example: ActivityType.CALL })
-    @IsEnum(ActivityType)
-    type: ActivityType;
+  @ApiProperty({ enum: ActivityType, example: ActivityType.CALL })
+  @IsEnum(ActivityType)
+  type: ActivityType;
 
-    @ApiProperty({ example: 'Telefon görüşmesi yapıldı', maxLength: 160 })
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(160)
-    title: string;
+  @ApiProperty({ example: 'Telefon görüşmesi yapıldı', maxLength: 160 })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(160)
+  title: string;
 
-    @ApiPropertyOptional({ example: 'Müşteriyle fiyat konuşuldu', maxLength: 1000 })
-    @IsOptional()
-    @IsString()
-    @MaxLength(1000)
-    description?: string;
+  @ApiPropertyOptional({ example: 'Müşteriyle fiyat konuşuldu', maxLength: 1000 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  description?: string;
 }

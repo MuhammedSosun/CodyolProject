@@ -16,7 +16,8 @@ model User {
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   deletedAt            DateTime?
-  createdActivities    Activity[]       @relation("UserActivities")
+  activityAsActor      Activity[]       @relation("ActivityActor")
+  activityAsCreator    Activity[]       @relation("ActivityCreator")
   ownedCustomers       Customer[]       @relation("CustomerOwner")
   profile              Profile?
   refreshTokens        RefreshToken[]   @relation("UserRefreshTokens")
@@ -107,6 +108,9 @@ model Task {
 model Activity {
   id              String       @id @default(uuid())
   customerId      String?
+  userId          String
+  entityType      String?
+  entityId        String?
   createdByUserId String?
   taskId          String?
   type            ActivityType
@@ -114,14 +118,20 @@ model Activity {
   description     String?
   createdAt       DateTime     @default(now())
   deletedAt       DateTime?
-  createdByUser   User?        @relation("UserActivities", fields: [createdByUserId], references: [id])
-  customer        Customer?    @relation(fields: [customerId], references: [id])
-  task            Task?        @relation(fields: [taskId], references: [id])
+  metadata        Json?
+
+  user          User  @relation("ActivityActor", fields: [userId], references: [id], onDelete: Cascade)
+  createdByUser User? @relation("ActivityCreator", fields: [createdByUserId], references: [id])
+
+  customer Customer? @relation(fields: [customerId], references: [id])
+  task     Task?     @relation(fields: [taskId], references: [id])
 
   @@index([customerId])
   @@index([createdByUserId])
   @@index([type])
   @@index([taskId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Proposal {

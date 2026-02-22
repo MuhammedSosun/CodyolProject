@@ -59,18 +59,16 @@ export class TaskService {
       projectId: dto.projectId ?? null,
     });
 
-    // 4) activity log
-    if (task.customerId) {
-      await this.activityService.create(
-        {
-          customerId: task.customerId,
-          taskId: task.id,
-          type: ActivityType.TASK_CREATED,
-          title: `Görev oluşturuldu: ${task.title}`,
-        },
-        creatorUserId,
-      );
-    }
+    // 4) activity log (müşteri olmasa da yaz)
+    await this.activityService.create(
+      {
+        customerId: task.customerId ?? undefined, // ✅ yoksa hiç göndermiyoruz
+        taskId: task.id,
+        type: ActivityType.TASK_CREATED,
+        title: `Görev oluşturuldu: ${task.title}`,
+      },
+      creatorUserId,
+    );
 
     return this.toResponse(task);
   }
@@ -155,15 +153,11 @@ export class TaskService {
     const updated = await this.repo.updateSafe(id, data);
     if (!updated) throw new NotFoundException('Task not found');
 
-    // 🔥 STATUS DEĞİŞTİYSE ACTIVITY
-    if (
-      dto.status !== undefined &&
-      dto.status !== current.status &&
-      updated.customerId
-    ) {
+    // 🔥 STATUS DEĞİŞTİYSE ACTIVITY (müşteri olmasa da yaz)
+    if (dto.status !== undefined && dto.status !== current.status) {
       await this.activityService.create(
         {
-          customerId: updated.customerId,
+          customerId: updated.customerId ?? undefined, // ✅ yoksa boş
           taskId: updated.id,
           type: ActivityType.TASK_STATUS_CHANGED,
           title: `Görev durumu güncellendi: ${updated.title}`,
